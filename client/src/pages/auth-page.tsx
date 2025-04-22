@@ -11,11 +11,11 @@ import { Redirect } from "wouter";
 import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
-  username: z.string().min(3, {
-    message: "Username must be at least 3 characters long",
+  email: z.string().email({
+    message: "Please enter a valid email address",
   }),
   password: z.string().min(6, {
-    message: "Password must be at least 6 characters long",
+    message: "Password must be at least 6 characters.",
   }),
 });
 
@@ -32,7 +32,7 @@ export default function AuthPage() {
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -40,20 +40,22 @@ export default function AuthPage() {
   const registerForm = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
       confirmPassword: "",
     },
   });
   
   async function onLoginSubmit(values: z.infer<typeof loginSchema>) {
-    loginMutation.mutate(values);
+    loginMutation.mutate(values); // Pass the whole values object { email, password }
+    // loginMutation.mutate({ email: values.email, password: values.password });
   }
   
   async function onRegisterSubmit(values: z.infer<typeof registerSchema>) {
     registerMutation.mutate({
-      username: values.username,
+      email: values.email,
       password: values.password,
+      // Options can be added here if needed, e.g., for metadata
     });
   }
   
@@ -86,12 +88,12 @@ export default function AuthPage() {
                   <CardContent className="space-y-4">
                     <FormField
                       control={loginForm.control}
-                      name="username"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="johndoe" {...field} />
+                            <Input type="email" placeholder="you@example.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -135,12 +137,12 @@ export default function AuthPage() {
                   <CardContent className="space-y-4">
                     <FormField
                       control={registerForm.control}
-                      name="username"
+                      name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Username</FormLabel>
+                          <FormLabel>Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="johndoe" {...field} />
+                            <Input type="email" placeholder="you@example.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
