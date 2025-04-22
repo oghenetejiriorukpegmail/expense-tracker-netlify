@@ -56,13 +56,12 @@ export const authenticateJWT = (storage: IStorage) => {
 
                     if (appUser) {
                         // 3. Sanitize and attach the application user object to req.user
+                        // Ensure potentially null fields have default values
                         const sanitizedUser: AppUser = {
                             ...appUser,
-                            // Provide default empty strings for potentially null string fields
-                            lastName: appUser.lastName ?? '',
-                            phoneNumber: appUser.phoneNumber ?? '',
-                            // bio can remain null if the schema allows it
-                            bio: appUser.bio ?? null,
+                            lastName: appUser.lastName ?? '', // Default to empty string if null/undefined
+                            phoneNumber: appUser.phoneNumber ?? '', // Default to empty string if null/undefined
+                            bio: appUser.bio, // bio can remain null as per schema/downstream handling
                         };
                         req.user = sanitizedUser;
                         req.supabaseUser = supabaseUser; // Optionally keep Supabase user info
