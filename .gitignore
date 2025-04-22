@@ -29,4 +29,4 @@ sqlite.db-shm # SQLite shared memory file
 app-config.json
 # Netlify deployment artifacts
 .netlify
-netlify/functions/
+# netlify/functions/
