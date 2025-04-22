@@ -1,0 +1,32 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Database file
+sqlite.db
+sqlite.db-journal # SQLite journal file
+sqlite.db-wal # SQLite WAL file
+sqlite.db-shm # SQLite shared memory file
+
+# Environment variables
+.env
+.env.*
+!.env.example # Keep example env file if it exists
+
+# Uploaded files
+/uploads/
+!.env.example # Keep example env file if it exists
+
+# Temporary Office files
+~$*.xlsx
+~$*.docx
+~$*.pptx
+
+# Configuration files (should use environment variables or examples)
+app-config.json
+# Netlify deployment artifacts
+.netlify
+netlify/functions/

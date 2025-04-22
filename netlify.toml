@@ -1,0 +1,26 @@
+[build]
+  # Command to build the client and potentially the server functions
+  # Assuming the client build output is 'dist' and server is handled separately or by this script
+  command = "npm run build"
+  # Directory containing the built client-side assets
+  publish = "client/dist"
+  # Directory where Netlify will find the serverless functions
+  functions = "netlify/functions"
+
+[functions]
+  # Specify the Node.js runtime version if needed (optional, Netlify often defaults reasonably)
+  # node_bundler = "esbuild" # Optional: Use esbuild for faster function bundling
+
+[[redirects]]
+  # Redirect all API requests to the serverless function
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  # Force allows overriding Netlify's default file serving behavior for this path
+  force = true
+
+[[redirects]]
+  # Fallback for client-side routing (Single Page Application)
+  from = "/*"
+  to = "/index.html"
+  status = 200
