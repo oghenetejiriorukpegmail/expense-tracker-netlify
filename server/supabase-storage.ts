@@ -179,7 +179,19 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getUserByAuthId(authUserId: string): Promise<User | undefined> {
-    const result = await this.db.select().from(schema.users).where(eq(schema.users.authUserId, authUserId)).limit(1);
+    // Explicitly select columns, excluding 'password'
+    const result = await this.db.select({
+      id: schema.users.id,
+      authUserId: schema.users.authUserId,
+      username: schema.users.username,
+      email: schema.users.email,
+      firstName: schema.users.firstName,
+      lastName: schema.users.lastName,
+      phoneNumber: schema.users.phoneNumber,
+      bio: schema.users.bio,
+      createdAt: schema.users.createdAt,
+      updatedAt: schema.users.updatedAt
+    }).from(schema.users).where(eq(schema.users.authUserId, authUserId)).limit(1);
     return result[0];
   }
 
