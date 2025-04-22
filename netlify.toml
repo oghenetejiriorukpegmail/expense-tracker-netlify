@@ -1,7 +1,6 @@
 [build]
   # Command to build the client and potentially the server functions
   # Assuming the client build output is 'dist' and server is handled separately or by this script
-  command = "npm run build"
   # Directory containing the built client-side assets
   publish = "client/dist"
   # Directory where Netlify will find the serverless functions
@@ -24,3 +23,8 @@
   from = "/*"
   to = "/index.html"
   status = 200
+[dev]
+  # Directory to serve for local development
+  publish = "client/dist" # Or "client" if you want Netlify Dev to run the client dev server
+  # Command to run for local development (might need adjustment)
+  command = "npm --prefix client run dev" # Placeholder - assuming 'npm run dev' starts your client dev server
