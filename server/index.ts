@@ -77,6 +77,15 @@ async function initializeApp() {
   return app; // Return the configured app instance
 }
 
-// Create the handler using serverless-http
-// Initialize the app within the handler scope to ensure it's ready for each invocation
-export const handler = serverless(initializeApp()); // Pass the promise directly
+// Create a promise for the initialized app
+const appPromise = initializeApp();
+
+// Export an async handler function that awaits the app initialization
+export const handler = async (event: any, context: any) => {
+  // Wait for the app to be initialized on the first invocation
+  const app = await appPromise;
+  // Create the serverless handler with the initialized app *after* it's ready
+  const serverlessHandler = serverless(app);
+  // Call the actual serverless handler
+  return serverlessHandler(event, context);
+};
