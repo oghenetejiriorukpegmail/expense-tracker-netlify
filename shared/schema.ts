@@ -158,6 +158,9 @@ export const baseInsertMileageLogSchema = rawInsertMileageLogSchema;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+
+// Type for public user data, excluding sensitive fields like password
+export type PublicUser = Omit<User, 'password'>;
 export type InsertTrip = z.infer<typeof insertTripSchema>;
 export type Trip = typeof trips.$inferSelect;
 

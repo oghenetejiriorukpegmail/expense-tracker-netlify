@@ -2,7 +2,7 @@ import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import * as schema from '@shared/schema';
-import type { User, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "@shared/schema"; // Added MileageLog, BackgroundTask types
+import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "@shared/schema"; // Added PublicUser, MileageLog, BackgroundTask types
 import { eq, and, desc, gte, lte, asc } from 'drizzle-orm'; // Added gte, lte, asc
 import session from "express-session";
 import connectPgSimple from 'connect-pg-simple'; // Import connect-pg-simple
@@ -178,7 +178,7 @@ export class SupabaseStorage implements IStorage {
     return result[0];
   }
 
-  async getUserByAuthId(authUserId: string): Promise<User | undefined> {
+  async getUserByAuthId(authUserId: string): Promise<PublicUser | undefined> {
     // Explicitly select columns, excluding 'password'
     const result = await this.db.select({
       id: schema.users.id,
@@ -190,10 +190,30 @@ export class SupabaseStorage implements IStorage {
       phoneNumber: schema.users.phoneNumber,
       bio: schema.users.bio,
       createdAt: schema.users.createdAt,
-      updatedAt: schema.users.updatedAt
+      // updatedAt removed as it's not in the schema
     }).from(schema.users).where(eq(schema.users.authUserId, authUserId)).limit(1);
-    // Return the user object or null if not found
-    return result[0] ?? null;
+    const userFromDb = result[0];
+    if (!userFromDb) {
+      return undefined; // Return undefined if user not found, matching Promise<User | undefined>
+    }
+
+    // Explicitly map to the User type structure
+    // Assuming nullable fields default to null based on the User type definition
+    const user: PublicUser = {
+      id: userFromDb.id,
+      authUserId: userFromDb.authUserId,
+      username: userFromDb.username ?? null,
+      email: userFromDb.email ?? null,
+      firstName: userFromDb.firstName ?? null,
+      lastName: userFromDb.lastName ?? null,
+      phoneNumber: userFromDb.phoneNumber ?? null,
+      bio: userFromDb.bio ?? null,
+      createdAt: userFromDb.createdAt,
+      // updatedAt removed as it's not in the schema
+      // Note: 'password' is intentionally excluded as it wasn't selected
+    };
+
+    return user;
   }
 
 
