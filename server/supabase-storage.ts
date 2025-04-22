@@ -192,7 +192,8 @@ export class SupabaseStorage implements IStorage {
       createdAt: schema.users.createdAt,
       updatedAt: schema.users.updatedAt
     }).from(schema.users).where(eq(schema.users.authUserId, authUserId)).limit(1);
-    return result[0];
+    // Return the user object or null if not found
+    return result[0] ?? null;
   }
 
 
