@@ -55,11 +55,19 @@ export const authenticateJWT = (storage: IStorage) => {
                     const appUser = await storage.getUserByAuthId(supabaseUser.id);
 
                     if (appUser) {
-                        // 3. Attach the application user object (with integer ID) to req.user
-                        req.user = appUser;
+                        // 3. Sanitize and attach the application user object to req.user
+                        const sanitizedUser: AppUser = {
+                            ...appUser,
+                            // Provide default empty strings for potentially null string fields
+                            lastName: appUser.lastName ?? '',
+                            phoneNumber: appUser.phoneNumber ?? '',
+                            // bio can remain null if the schema allows it
+                            bio: appUser.bio ?? null,
+                        };
+                        req.user = sanitizedUser;
                         req.supabaseUser = supabaseUser; // Optionally keep Supabase user info
                         // req.supabase = supabase; // Optionally attach client
-                        console.log(`Auth: App User ${appUser.id} (Auth ID: ${supabaseUser.id}) authenticated.`);
+                        console.log(`Auth: App User ${sanitizedUser.id} (Auth ID: ${supabaseUser.id}) authenticated.`);
                         next(); // Proceed
                     } else {
                         // Supabase user exists, but no corresponding user in our DB
