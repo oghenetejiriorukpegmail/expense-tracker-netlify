@@ -1,12 +1,8 @@
 import { SignIn, SignUp } from "@clerk/clerk-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Note: Removed Supabase-related imports and logic (useAuth, schemas, forms, submit handlers)
-// Note: Removed Redirect and Loader2 as Clerk handles redirection and loading states internally
+// Removed Tabs imports as they are no longer used for switching
 
 export default function AuthPage() {
-  // Note: Removed the check for existing user and redirect, Clerk handles this
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -19,30 +15,19 @@ export default function AuthPage() {
               Track your expenses and manage your trips efficiently
             </CardDescription>
           </CardHeader>
-          
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <CardContent>
-                {/* Embed Clerk SignIn component */}
-                <SignIn path="/auth" routing="path" signUpUrl="/auth" redirectUrl="/" />
-              </CardContent>
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <CardContent>
-                {/* Embed Clerk SignUp component */}
-                <SignUp path="/auth" routing="path" signInUrl="/auth" redirectUrl="/" />
-              </CardContent>
-            </TabsContent>
-          </Tabs>
+
+          {/* Render Clerk SignUp/SignIn directly */}
+          {/* Clerk components handle switching between sign-in/sign-up */}
+          <CardContent className="flex justify-center">
+             {/* Default to SignUp, Clerk provides link to SignIn */}
+             <SignUp path="/auth" routing="path" signInUrl="/auth" redirectUrl="/" />
+             {/* SignIn component might not be needed here if SignUp handles the switch */}
+             {/* <SignIn path="/auth" routing="path" signUpUrl="/auth" redirectUrl="/" /> */}
+          </CardContent>
+
         </Card>
       </div>
-      
+
       {/* Hero Section (kept for visual consistency) */}
       <div className="w-full md:w-1/2 bg-gradient-to-r from-primary to-blue-600 hidden md:flex items-center justify-center text-white p-10">
         <div className="max-w-md space-y-8">
@@ -52,7 +37,7 @@ export default function AuthPage() {
               Keep track of your business and personal expenses with our intuitive expense tracking app
             </p>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
               <div className="bg-white/20 p-2 rounded-lg">
@@ -69,7 +54,7 @@ export default function AuthPage() {
                 <p className="opacity-90">Group expenses by trips for better organization</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3">
               <div className="bg-white/20 p-2 rounded-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -83,7 +68,7 @@ export default function AuthPage() {
                 <p className="opacity-90">Upload receipts and extract data automatically</p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3">
               <div className="bg-white/20 p-2 rounded-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
