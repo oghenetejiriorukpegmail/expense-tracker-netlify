@@ -24,3 +24,4 @@ A full-stack expense tracking application built with:
 - Improved error handling
 - Standardized authentication flow across all API routes
 - Fixed Clerk publishable key configuration for Netlify environment
+- Added automatic user creation for new Clerk users
