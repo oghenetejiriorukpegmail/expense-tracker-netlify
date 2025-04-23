@@ -27,3 +27,4 @@ A full-stack expense tracking application built with:
 - Added automatic user creation for new Clerk users
 - Fixed sign-in/sign-up page routing and redirection
 - Fixed authentication redirect after successful sign-in
+- Added wildcard route to handle Clerk authentication sub-paths (e.g., MFA)
