@@ -15,10 +15,10 @@ createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ClerkProvider
       publishableKey={PUBLISHABLE_KEY}
-      redirectUrl="/"
+      fallbackRedirectUrl="/"
       signInUrl="/auth/sign-in"
       signUpUrl="/auth/sign-up"
-      afterSignOutUrl="/"
+      afterSignOutUrl="/auth/sign-in"
       afterSignInUrl="/"
       afterSignUpUrl="/"
       afterSocialAuthSignInUrl="/"

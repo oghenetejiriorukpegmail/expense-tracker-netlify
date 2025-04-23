@@ -41,7 +41,7 @@ export default function Sidebar() {
            </Button>
            {/* Add UserButton to mobile header */}
            <SignedIn>
-             <UserButton afterSignOutUrl="/auth" />
+             <UserButton afterSignOutUrl="/auth/sign-in" />
            </SignedIn>
            <SignedOut>
              {/* Optionally add a sign-in button here for mobile header */}
@@ -71,7 +71,7 @@ export default function Sidebar() {
         <SignedIn>
           <div className="p-4 border-b dark:border-gray-700">
              {/* Use Clerk's UserButton for profile management and sign out */}
-             <UserButton afterSignOutUrl="/auth" />
+             <UserButton afterSignOutUrl="/auth/sign-in" />
            </div>
         </SignedIn>
         {/* Optionally show something different when signed out */}
