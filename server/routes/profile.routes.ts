@@ -1,35 +1,26 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import { getAuth } from "@clerk/express"; // Import Clerk getAuth
 import type { SupabaseStorage } from "../supabase-storage";
-import type { User } from "@shared/schema";
+import type { User, PublicUser } from "@shared/schema";
 
-// Define request type augmentation for Clerk auth
-interface ClerkRequest extends Request {
-  auth?: { userId?: string | null }; // Clerk attaches auth here
+// Define request type with user property
+interface AuthenticatedRequest extends Request {
+  user: PublicUser; // Our middleware attaches the user object here
 }
 
 export function createProfileRouter(storage: SupabaseStorage): express.Router {
   const router = express.Router();
 
   // GET /api/profile
-  router.get("/", async (req: ClerkRequest, res: Response, next: NextFunction) => {
+  router.get("/", async (req: Request, res: Response, next: NextFunction) => {
+    // Cast the request to our authenticated request type
+    const authReq = req as AuthenticatedRequest;
     try {
-      const { userId: authUserId } = getAuth(req); // Get userId from Clerk
-      if (!authUserId) {
-        return res.status(401).send("Unauthorized");
-      }
-      // Fetch user profile from DB using the Clerk authUserId
-      // Assuming getUserByAuthId still exists but now uses Clerk's ID format
-      const userProfile = await storage.getUserByClerkId(authUserId); // Need to implement getUserByClerkId
-      if (!userProfile) {
-         // Optionally create a profile if one doesn't exist, or handle as needed
-         console.warn(`Profile not found for Clerk user ID: ${authUserId}`);
-         return res.status(404).send("User profile not found");
-      }
-      // Exclude password if it exists (though it shouldn't in public.users)
-      const { password, ...profileData } = userProfile;
-      res.json(profileData);
+      // User is already attached to the request by our middleware
+      const userProfile = authReq.user;
+      
+      // Return the user profile
+      res.json(userProfile);
     } catch (error) {
       next(error);
     }
@@ -44,19 +35,14 @@ export function createProfileRouter(storage: SupabaseStorage): express.Router {
     bio: z.string().optional(),
   });
 
-  router.put("/", async (req: ClerkRequest, res: Response, next: NextFunction) => {
+  router.put("/", async (req: Request, res: Response, next: NextFunction) => {
+    // Cast the request to our authenticated request type
+    const authReq = req as AuthenticatedRequest;
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) {
-        return res.status(401).send("Unauthorized");
-      }
       const validatedData = profileUpdateSchema.parse(req.body);
 
-      // Fetch the internal user ID based on Clerk ID
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) {
-          return res.status(404).send("User profile not found");
-      }
+      // User is already attached to the request by our middleware
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id; // Get the internal integer ID
 
       // Check if email is being changed and if it conflicts (Clerk usually handles primary email)

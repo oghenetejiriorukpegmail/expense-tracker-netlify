@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import type { SupabaseStorage } from "./supabase-storage"; // Use specific type
+import { createAuthMiddleware } from "./middleware/auth-middleware"; // Import our custom auth middleware
 
 // Import the new router creation functions
 import { createProfileRouter } from "./routes/profile.routes";
@@ -18,15 +19,18 @@ import { createExportRouter } from "./routes/export.routes";
 // --- Main Route Registration ---
 export async function registerRoutes(app: Express, storage: SupabaseStorage): Promise<Server> {
   // Clerk middleware is applied in server/index.ts
+  
+  // Create our custom auth middleware
+  const authMiddleware = createAuthMiddleware(storage);
 
-  // Mount the new resource-specific routers
-  app.use('/api/profile', createProfileRouter(storage));
-  app.use('/api/trips', createTripRouter(storage));
-  app.use('/api/expenses', createExpenseRouter(storage));
-  app.use('/api/mileage-logs', createMileageLogRouter(storage));
-  app.use('/api/settings', createSettingsRouter()); // Settings routes might not need storage
-  app.use('/api/background-tasks', createBackgroundTaskRouter(storage));
-  app.use('/api/export', createExportRouter(storage)); // Mount export routes under /api/export
+  // Mount the new resource-specific routers with auth middleware
+  app.use('/api/profile', authMiddleware, createProfileRouter(storage));
+  app.use('/api/trips', authMiddleware, createTripRouter(storage));
+  app.use('/api/expenses', authMiddleware, createExpenseRouter(storage));
+  app.use('/api/mileage-logs', authMiddleware, createMileageLogRouter(storage));
+  app.use('/api/settings', authMiddleware, createSettingsRouter()); // Settings routes might not need storage
+  app.use('/api/background-tasks', authMiddleware, createBackgroundTaskRouter(storage));
+  app.use('/api/export', authMiddleware, createExportRouter(storage)); // Mount export routes under /api/export
 
   // Note: OCR routes were part of expenses/mileage logs and handled there or via background functions
 

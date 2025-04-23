@@ -1,32 +1,28 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import { getAuth } from "@clerk/express"; // Import Clerk getAuth
 import { insertMileageLogSchema, rawInsertMileageLogSchema } from "@shared/schema";
 import { upload } from "../middleware/multer-config"; // Assuming multer config is still needed
 import type { SupabaseStorage } from "../supabase-storage";
-import type { User } from "@shared/schema"; // Assuming User type is still relevant for internal ID
+import type { User, PublicUser } from "@shared/schema"; // Import PublicUser
 import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { loadConfig } from "../config"; // Import config loading
 import { processOdometerImageWithAI, OcrProvider } from "../util/ocr"; // Import OCR function and OcrProvider type
 
-// Define request type augmentation for Clerk auth and Multer
-interface ClerkMulterRequest extends Request {
-  auth?: { userId?: string | null }; // Clerk attaches auth here
+// Define request type with user property and Multer
+interface AuthenticatedMulterRequest extends Request {
+  user: PublicUser; // Our middleware attaches the user object here
   file?: any; // Multer file
-  user?: User | null | undefined; // Keep for potential internal ID usage if needed
 }
 
 export function createMileageLogRouter(storage: SupabaseStorage): express.Router {
   const router = express.Router();
 
   // GET /api/mileage-logs
-  router.get("/", async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.get("/", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const querySchema = z.object({
@@ -44,13 +40,11 @@ export function createMileageLogRouter(storage: SupabaseStorage): express.Router
   });
 
   // POST /api/mileage-logs
-  router.post("/", async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.post("/", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const validatedData = insertMileageLogSchema.parse(req.body);
@@ -65,13 +59,11 @@ export function createMileageLogRouter(storage: SupabaseStorage): express.Router
   });
 
   // PUT /api/mileage-logs/:id
-  router.put("/:id", async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const logId = parseInt(req.params.id);
@@ -126,13 +118,11 @@ export function createMileageLogRouter(storage: SupabaseStorage): express.Router
   });
 
   // DELETE /api/mileage-logs/:id
-  router.delete("/:id", async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const logId = parseInt(req.params.id);
@@ -157,13 +147,11 @@ export function createMileageLogRouter(storage: SupabaseStorage): express.Router
   });
 
   // POST /api/mileage-logs/upload-odometer-image
-  router.post("/upload-odometer-image", (upload as any).single("odometerImage"), async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.post("/upload-odometer-image", (upload as any).single("odometerImage"), async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       if (!req.file) return res.status(400).send("No odometer image file uploaded");

@@ -1,32 +1,28 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import { getAuth } from "@clerk/express"; // Import Clerk getAuth
 import * as schema from '@shared/schema'; // Import schema
 import { insertExpenseSchema } from "@shared/schema";
 import { upload } from "../middleware/multer-config"; // Assuming multer config is still needed
 import type { SupabaseStorage } from "../supabase-storage";
-import type { User, InsertExpense } from "@shared/schema"; // Import InsertExpense
+import type { User, InsertExpense, PublicUser } from "@shared/schema"; // Import InsertExpense
 import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { loadConfig } from "../config"; // Import config loading
 
-// Define request type augmentation for Clerk auth and Multer
-interface ClerkMulterRequest extends Request {
-  auth?: { userId?: string | null }; // Clerk attaches auth here
+// Define request type with user property and Multer
+interface AuthenticatedMulterRequest extends Request {
+  user: PublicUser; // Our middleware attaches the user object here
   file?: any; // Multer file
-  user?: User | null | undefined; // Keep for potential internal ID usage if needed
 }
 
 export function createExpenseRouter(storage: SupabaseStorage): express.Router {
   const router = express.Router();
 
   // GET /api/expenses
-  router.get("/", async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.get("/", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const tripName = req.query.tripName as string | undefined;
@@ -38,13 +34,11 @@ export function createExpenseRouter(storage: SupabaseStorage): express.Router {
   });
 
   // GET /api/expenses/:id
-  router.get("/:id", async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.get("/:id", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const expenseId = parseInt(req.params.id);
@@ -59,13 +53,11 @@ export function createExpenseRouter(storage: SupabaseStorage): express.Router {
   });
 
   // POST /api/expenses
-  router.post("/", (upload as any).single("receipt"), async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.post("/", (upload as any).single("receipt"), async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const config = loadConfig();
@@ -137,13 +129,11 @@ export function createExpenseRouter(storage: SupabaseStorage): express.Router {
   });
 
   // PUT /api/expenses/:id
-  router.put("/:id", (upload as any).single("receipt"), async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.put("/:id", (upload as any).single("receipt"), async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const expenseId = parseInt(req.params.id);
@@ -214,13 +204,11 @@ export function createExpenseRouter(storage: SupabaseStorage): express.Router {
   });
 
   // DELETE /api/expenses/:id
-  router.delete("/:id", async (req: ClerkMulterRequest, res: Response, next: NextFunction) => {
+  router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized");
-
-      const userProfile = await storage.getUserByClerkId(authUserId);
-      if (!userProfile) return res.status(404).send("User profile not found");
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedMulterRequest;
+      const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
       const expenseId = parseInt(req.params.id);

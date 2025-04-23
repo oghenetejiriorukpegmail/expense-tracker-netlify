@@ -1,23 +1,21 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { getAuth } from "@clerk/express"; // Import Clerk getAuth
 import { testOCR } from "../util/ocr"; // Import OCR types and test function
 import { updateOcrApiKey, setDefaultOcrMethod, saveConfig, loadConfig } from "../config";
-import type { User } from "@shared/schema"; // Assuming User type is still relevant for internal ID
+import type { User, PublicUser } from "@shared/schema"; // Import PublicUser
 
-// Define request type augmentation for Clerk auth
-interface ClerkRequest extends Request {
-  auth?: { userId?: string | null }; // Clerk attaches auth here
-  user?: User | null | undefined; // Keep for potential internal ID usage if needed
+// Define request type with user property
+interface AuthenticatedRequest extends Request {
+  user: PublicUser; // Our middleware attaches the user object here
 }
 
 export function createSettingsRouter(): express.Router {
   const router = express.Router();
 
   // POST /api/test-ocr
-  router.post("/test-ocr", async (req: ClerkRequest, res: Response, next: NextFunction) => {
+  router.post("/test-ocr", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized"); // Check Clerk auth
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedRequest;
 
       const { method, apiKey, ocrApiKey } = req.body;
       const actualApiKey = ocrApiKey !== undefined ? ocrApiKey : apiKey;
@@ -27,10 +25,10 @@ export function createSettingsRouter(): express.Router {
   });
 
   // POST /api/update-env (Renamed to /api/settings for clarity)
-  router.post("/", async (req: ClerkRequest, res: Response, next: NextFunction) => {
+  router.post("/", async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userId: authUserId } = getAuth(req);
-      if (!authUserId) return res.status(401).send("Unauthorized"); // Check Clerk auth
+      // Cast the request to our authenticated request type
+      const authReq = req as AuthenticatedRequest;
 
       const { ocrMethod, apiKey, ocrApiKey, ocrTemplate } = req.body;
       const actualApiKey = ocrApiKey !== undefined ? ocrApiKey : apiKey;
