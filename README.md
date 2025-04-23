@@ -26,3 +26,4 @@ A full-stack expense tracking application built with:
 - Fixed Clerk publishable key configuration for Netlify environment
 - Added automatic user creation for new Clerk users
 - Fixed sign-in/sign-up page routing and redirection
+- Fixed authentication redirect after successful sign-in
