@@ -22,9 +22,21 @@ export default function AuthPage() {
           {/* Render Clerk SignUp/SignIn based on the current path */}
           <CardContent className="flex justify-center">
             {isSignIn ? (
-              <SignIn path="/auth/sign-in" routing="path" signUpUrl="/auth/sign-up" redirectUrl="/" />
+              <SignIn
+                path="/auth/sign-in"
+                routing="path"
+                signUpUrl="/auth/sign-up"
+                redirectUrl="/"
+                afterSignInUrl="/"
+              />
             ) : (
-              <SignUp path="/auth/sign-up" routing="path" signInUrl="/auth/sign-in" redirectUrl="/" />
+              <SignUp
+                path="/auth/sign-up"
+                routing="path"
+                signInUrl="/auth/sign-in"
+                redirectUrl="/"
+                afterSignUpUrl="/"
+              />
             )}
           </CardContent>
 
