@@ -10,6 +10,7 @@ import NotFound from "@/pages/not-found";
 // Removed: import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import AuthPage from "@/pages/auth-page";
+import VerifyEmailPage from "@/pages/verify-email-page"; // Import VerifyEmailPage
 import DashboardPage from "@/pages/dashboard-page";
 import TripsPage from "@/pages/trips-page";
 import ExpensesPage from "@/pages/expenses-page";
@@ -34,6 +35,8 @@ function Router() {
       <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
       {/* Duplicate route removed */}
       <Route path="/auth" component={AuthPage} />
+      {/* Add route for email verification */}
+      <Route path="/auth/verify-email-address" component={VerifyEmailPage} />
       <Route component={NotFound} />
     </Switch>
   );
