@@ -1,8 +1,11 @@
 import { SignIn, SignUp } from "@clerk/clerk-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// Removed Tabs imports as they are no longer used for switching
+import { useLocation } from "wouter";
 
 export default function AuthPage() {
+  // Get the current location to determine if we're on sign-in or sign-up
+  const [location] = useLocation();
+  const isSignIn = location.includes("sign-in");
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -16,13 +19,13 @@ export default function AuthPage() {
             </CardDescription>
           </CardHeader>
 
-          {/* Render Clerk SignUp/SignIn directly */}
-          {/* Clerk components handle switching between sign-in/sign-up */}
+          {/* Render Clerk SignUp/SignIn based on the current path */}
           <CardContent className="flex justify-center">
-             {/* Default to SignUp, Clerk provides link to SignIn */}
-             <SignUp path="/auth" routing="path" signInUrl="/auth" redirectUrl="/" />
-             {/* SignIn component might not be needed here if SignUp handles the switch */}
-             {/* <SignIn path="/auth" routing="path" signUpUrl="/auth" redirectUrl="/" /> */}
+            {isSignIn ? (
+              <SignIn path="/auth/sign-in" routing="path" signUpUrl="/auth/sign-up" redirectUrl="/" />
+            ) : (
+              <SignUp path="/auth/sign-up" routing="path" signInUrl="/auth/sign-in" redirectUrl="/" />
+            )}
           </CardContent>
 
         </Card>

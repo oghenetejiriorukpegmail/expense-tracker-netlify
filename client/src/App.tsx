@@ -34,6 +34,8 @@ function Router() {
       <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Add Profile route */}
       <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
       <Route path="/auth" component={AuthPage} />
+      <Route path="/auth/sign-in" component={AuthPage} />
+      <Route path="/auth/sign-up" component={AuthPage} />
       {/* Add route for email verification */}
       <Route path="/auth/verify-email-address" component={VerifyEmailPage} />
       {/* Add route for SSO/Magic Link callback */}
