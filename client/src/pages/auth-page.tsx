@@ -27,7 +27,7 @@ export default function AuthPage() {
                 routing="path"
                 signUpUrl="/auth/sign-up"
                 redirectUrl="/"
-                afterSignInUrl="/"
+                fallbackRedirectUrl="/" // Use fallbackRedirectUrl
               />
             ) : (
               <SignUp
@@ -35,7 +35,7 @@ export default function AuthPage() {
                 routing="path"
                 signInUrl="/auth/sign-in"
                 redirectUrl="/"
-                afterSignUpUrl="/"
+                fallbackRedirectUrl="/" // Use fallbackRedirectUrl
               />
             )}
           </CardContent>
