@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.upload = void 0;
-var multer_1 = require("multer");
+var multer = require("multer");
 // Configure storage
 // Use memory storage to handle files as buffers
-var storage = multer_1.default.memoryStorage();
+var storage = multer.memoryStorage();
 // File filter to only accept images and PDFs
 var fileFilter = function (_req, file, cb) {
     var allowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "application/pdf"];
@@ -16,7 +16,7 @@ var fileFilter = function (_req, file, cb) {
     }
 };
 // Configure multer
-exports.upload = (0, multer_1.default)({
+exports.upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
