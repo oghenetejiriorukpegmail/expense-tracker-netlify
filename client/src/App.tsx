@@ -7,7 +7,6 @@ import { supabase } from "./lib/supabaseClient"; // Import supabase client
 import { RealtimeChannel, RealtimePostgresChangesPayload, REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
 import { useToast } from "./hooks/use-toast"; // Import useToast
 import NotFound from "@/pages/not-found";
-// Removed: import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import AuthPage from "@/pages/auth-page";
 import VerifyEmailPage from "@/pages/verify-email-page"; // Import VerifyEmailPage
@@ -23,6 +22,7 @@ import BatchUploadModal from "@/components/modals/batch-upload-modal"; // Import
 import AddEditMileageLogModal from "@/components/modals/add-edit-mileage-log-modal"; // Import Mileage Log Modal
 import { useModalStore } from "./lib/store"; // Import modal store
 import type { BackgroundTask } from "../../shared/schema"; // Corrected relative path
+import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react"; // Import Clerk callback component
 
 function Router() {
   return (
@@ -33,10 +33,13 @@ function Router() {
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Add Profile route */}
       <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
-      {/* Duplicate route removed */}
       <Route path="/auth" component={AuthPage} />
       {/* Add route for email verification */}
       <Route path="/auth/verify-email-address" component={VerifyEmailPage} />
+      {/* Add route for SSO/Magic Link callback */}
+      <Route path="/auth/sso-callback">
+        <AuthenticateWithRedirectCallback />
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
