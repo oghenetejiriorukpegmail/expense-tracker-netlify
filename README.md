@@ -30,3 +30,5 @@ A full-stack expense tracking application built with:
 - Implemented `AuthCallbackHandler` component to correctly handle Clerk authentication sub-paths (e.g., SSO, MFA)
 - Enhanced auth callback handling to support all Clerk SSO paths and fallback redirects
 - Updated Clerk redirect configuration with proper appearance settings and redirect URLs
+- Fixed social authentication (Google) sign-in and sign-up flows
+- Added comprehensive support for all Clerk authentication paths including OAuth callbacks

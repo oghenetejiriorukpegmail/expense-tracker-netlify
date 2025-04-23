@@ -11,10 +11,18 @@ export default function AuthCallbackHandler() {
       location.includes("/sign-in/factor-") ||
       location.includes("/sign-in/sso-callback") ||
       location.includes("/sign-up/sso-callback") ||
-      location.includes("fallback_redirect_url")) {
+      location.includes("fallback_redirect_url") ||
+      location.includes("oauth") ||
+      location.includes("google") ||
+      location.includes("social")) {
     console.log("Rendering Clerk callback handler for path:", location);
     // Render the Clerk callback component for any authentication callback
-    return <AuthenticateWithRedirectCallback />;
+    return <AuthenticateWithRedirectCallback
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
+      afterSocialAuthSignInUrl="/"
+      afterSocialAuthSignUpUrl="/"
+    />;
   }
 
   // If it's not a callback path, render the main AuthPage

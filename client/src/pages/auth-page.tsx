@@ -27,11 +27,16 @@ export default function AuthPage() {
                 routing="path"
                 signUpUrl="/auth/sign-up"
                 redirectUrl="/"
+                afterSignInUrl="/"
+                afterSocialAuthSignInUrl="/"
+                socialButtonsVariant="iconButton"
                 appearance={{
                   elements: {
                     formButtonPrimary: 'bg-primary hover:bg-primary/90 text-white',
                     card: 'shadow-none',
                     formFieldInput: 'border-input',
+                    socialButtonsIconButton: 'border border-input hover:bg-muted',
+                    socialButtonsBlockButton: 'bg-white border border-input hover:bg-muted text-black',
                   }
                 }}
               />
@@ -41,11 +46,16 @@ export default function AuthPage() {
                 routing="path"
                 signInUrl="/auth/sign-in"
                 redirectUrl="/"
+                afterSignUpUrl="/"
+                afterSocialAuthSignUpUrl="/"
+                socialButtonsVariant="iconButton"
                 appearance={{
                   elements: {
                     formButtonPrimary: 'bg-primary hover:bg-primary/90 text-white',
                     card: 'shadow-none',
                     formFieldInput: 'border-input',
+                    socialButtonsIconButton: 'border border-input hover:bg-muted',
+                    socialButtonsBlockButton: 'bg-white border border-input hover:bg-muted text-black',
                   }
                 }}
               />
