@@ -1,9 +1,9 @@
-import { useQuery, useMutation } from "@tanstack/react-query"; // Remove queryClient import from here
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { queryClient, apiRequest } from "@/lib/queryClient"; // Import queryClient and apiRequest from local instance
-// Duplicate import removed
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@clerk/clerk-react"; // Import Clerk useAuth
 import { useToast } from "@/hooks/use-toast";
 import Sidebar from "@/components/sidebar";
 import AnimatedPage from "@/components/animated-page";
@@ -13,13 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import type { User } from "@shared/schema"; // Import User type
+import type { User } from "@shared/schema";
 
 // Schema for profile update form validation
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().optional(), // Add lastName
-  phoneNumber: z.string().optional(), // Add phoneNumber
+  lastName: z.string().optional(),
+  phoneNumber: z.string().optional(),
   email: z.string().email("Invalid email address"),
   bio: z.string().optional(),
 });
@@ -33,24 +33,27 @@ const passwordFormSchema = z.object({
   confirmPassword: z.string().min(1, "Please confirm your new password"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "New passwords don't match",
-  path: ["confirmPassword"], // Point error to the confirmation field
+  path: ["confirmPassword"],
 });
 
 type PasswordFormData = z.infer<typeof passwordFormSchema>;
 
 export default function ProfilePage() {
   const { toast } = useToast();
+  const { getToken } = useAuth(); // Get getToken from Clerk
 
   // Fetch profile data
   const { data: profile, isLoading, error } = useQuery<User>({
     queryKey: ["/api/profile"],
     queryFn: async () => {
-      const res = await apiRequest("GET", "/api/profile");
-      if (!res.ok) {
-        throw new Error("Failed to fetch profile");
-      }
+      const token = await getToken(); // Get Clerk token
+      if (!token) throw new Error("Not authenticated");
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await apiRequest("GET", "/api/profile", undefined, headers); // Pass headers
+      // Removed redundant !res.ok check as apiRequest handles it
       return res.json();
     },
+    enabled: !!getToken, // Only run query if getToken is available
   });
 
   // Setup form
@@ -58,16 +61,16 @@ export default function ProfilePage() {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       firstName: "",
-      lastName: "", // Add lastName default
-      phoneNumber: "", // Add phoneNumber default
+      lastName: "",
+      phoneNumber: "",
       email: "",
       bio: "",
     },
     // Update form defaults when profile data loads
     values: profile ? {
       firstName: profile.firstName || "",
-      lastName: profile.lastName || "", // Add lastName from profile
-      phoneNumber: profile.phoneNumber || "", // Add phoneNumber from profile
+      lastName: profile.lastName || "",
+      phoneNumber: profile.phoneNumber || "",
       email: profile.email || "",
       bio: profile.bio || "",
     } : undefined,
@@ -76,15 +79,15 @@ export default function ProfilePage() {
   // Mutation for updating profile
   const mutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
-      const res = await apiRequest("PUT", "/api/profile", data);
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: "Update failed" }));
-        throw new Error(errorData.message || "Failed to update profile");
-      }
+      const token = await getToken(); // Get Clerk token
+      if (!token) throw new Error("Not authenticated");
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await apiRequest("PUT", "/api/profile", data, headers); // Pass headers
+      // Removed redundant !res.ok check as apiRequest handles it
       return res.json();
     },
     onSuccess: (updatedProfile) => {
-      queryClient.setQueryData(["/api/profile"], updatedProfile); // Update cache
+      queryClient.setQueryData(["/api/profile"], updatedProfile);
       toast({ title: "Profile Updated", description: "Your profile has been saved." });
     },
     onError: (error) => {
@@ -112,18 +115,17 @@ export default function ProfilePage() {
 
   const passwordMutation = useMutation({
     mutationFn: async (data: PasswordFormData) => {
-      // Omit confirmPassword before sending to backend
+      const token = await getToken(); // Get Clerk token
+      if (!token) throw new Error("Not authenticated");
+      const headers = { Authorization: `Bearer ${token}` };
       const { confirmPassword, ...payload } = data;
-      const res = await apiRequest("POST", "/api/profile/change-password", payload);
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: "Password change failed" }));
-        throw new Error(errorData.message || "Failed to change password");
-      }
+      const res = await apiRequest("POST", "/api/profile/change-password", payload, headers); // Pass headers
+      // Removed redundant !res.ok check as apiRequest handles it
       return res.json();
     },
     onSuccess: () => {
       toast({ title: "Password Updated", description: "Your password has been changed successfully." });
-      passwordForm.reset(); // Reset password form on success
+      passwordForm.reset();
     },
     onError: (error) => {
       toast({

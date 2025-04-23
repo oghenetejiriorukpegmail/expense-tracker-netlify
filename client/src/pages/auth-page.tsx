@@ -1,68 +1,12 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { SignIn, SignUp } from "@clerk/clerk-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Redirect } from "wouter";
-import { Loader2 } from "lucide-react";
 
-const loginSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address",
-  }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
-});
-
-const registerSchema = loginSchema.extend({
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+// Note: Removed Supabase-related imports and logic (useAuth, schemas, forms, submit handlers)
+// Note: Removed Redirect and Loader2 as Clerk handles redirection and loading states internally
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
-  
-  const loginForm = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-  
-  const registerForm = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-  
-  async function onLoginSubmit(values: z.infer<typeof loginSchema>) {
-    loginMutation.mutate(values); // Pass the whole values object { email, password }
-    // loginMutation.mutate({ email: values.email, password: values.password });
-  }
-  
-  async function onRegisterSubmit(values: z.infer<typeof registerSchema>) {
-    registerMutation.mutate({
-      email: values.email,
-      password: values.password,
-      // Options can be added here if needed, e.g., for metadata
-    });
-  }
-  
-  // Redirect if user is already logged in
-  if (user) {
-    return <Redirect to="/" />;
-  }
+  // Note: Removed the check for existing user and redirect, Clerk handles this
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -83,121 +27,23 @@ export default function AuthPage() {
             </TabsList>
             
             <TabsContent value="login">
-              <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="you@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                  
-                  <CardFooter>
-                    <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-                      {loginMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Logging in
-                        </>
-                      ) : (
-                        "Login"
-                      )}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
+              <CardContent>
+                {/* Embed Clerk SignIn component */}
+                <SignIn path="/auth" routing="path" signUpUrl="/auth" redirectUrl="/" />
+              </CardContent>
             </TabsContent>
             
             <TabsContent value="register">
-              <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                  <CardContent className="space-y-4">
-                    <FormField
-                      control={registerForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="you@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={registerForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={registerForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                  
-                  <CardFooter>
-                    <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                      {registerMutation.isPending ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating account
-                        </>
-                      ) : (
-                        "Create Account"
-                      )}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
+              <CardContent>
+                {/* Embed Clerk SignUp component */}
+                <SignUp path="/auth" routing="path" signInUrl="/auth" redirectUrl="/" />
+              </CardContent>
             </TabsContent>
           </Tabs>
         </Card>
       </div>
       
-      {/* Hero Section */}
+      {/* Hero Section (kept for visual consistency) */}
       <div className="w-full md:w-1/2 bg-gradient-to-r from-primary to-blue-600 hidden md:flex items-center justify-center text-white p-10">
         <div className="max-w-md space-y-8">
           <div>

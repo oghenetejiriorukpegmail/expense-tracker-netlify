@@ -1,5 +1,5 @@
 import { users, trips, expenses } from "@shared/schema";
-import type { User, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog } from "@shared/schema"; // Added MileageLog types
+import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog } from "@shared/schema"; // Added PublicUser
 import session from "express-session";
 import createMemoryStore from "memorystore";
 
@@ -8,22 +8,22 @@ const MemoryStore = createMemoryStore(session);
 // Define the storage interface
 export interface IStorage {
   // User methods
-  getUserById(id: number): Promise<User | undefined>; // Renamed from getUser
+  getUserById(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByAuthId(authUserId: string): Promise<User | undefined>; // Add getUserByAuthId
+  // Removed getUserByAuthId
+  getUserByClerkId(clerkUserId: string): Promise<PublicUser | undefined>; // Added getUserByClerkId
+  getUserByEmail(email: string): Promise<User | undefined>;
+  // Removed createUser (handled by Clerk)
+  updateUserProfile(userId: number, profileData: { firstName: string; email: string; bio?: string | null; lastName?: string | null; phoneNumber?: string | null }): Promise<User | undefined>; // Added missing optional fields
+  // Removed updateUserPassword (handled by Clerk)
 
-  getUserByEmail(email: string): Promise<User | undefined>; // Add getUserByEmail
-  createUser(user: InsertUser): Promise<User>;
-  updateUserProfile(userId: number, profileData: { firstName: string; email: string; bio?: string | null }): Promise<User | undefined>; // Add updateUserProfile
-  updateUserPassword(userId: number, newPasswordHash: string): Promise<void>; // Add updateUserPassword
-  
   // Trip methods
   getTrip(id: number): Promise<Trip | undefined>;
   getTripsByUserId(userId: number): Promise<Trip[]>;
   createTrip(trip: InsertTrip & { userId: number }): Promise<Trip>;
   updateTrip(id: number, trip: Partial<InsertTrip>): Promise<Trip>;
   deleteTrip(id: number): Promise<void>;
-  
+
   // Expense methods
   getExpense(id: number): Promise<Expense | undefined>;
   getExpensesByUserId(userId: number): Promise<Expense[]>;
@@ -39,8 +39,8 @@ export interface IStorage {
   updateMileageLog(id: number, log: Partial<InsertMileageLog & { calculatedDistance?: number; startImageUrl?: string | null; endImageUrl?: string | null }>): Promise<MileageLog>;
   deleteMileageLog(id: number): Promise<void>;
 
-  // Session store
-  sessionStore: session.Store; // Use session.Store type
+  // Session store (might be removable if Clerk handles all session management)
+  sessionStore: session.Store;
 }
 
 // MemStorage class removed as it's no longer used.
@@ -49,7 +49,7 @@ export interface IStorage {
 import { SupabaseStorage } from './supabase-storage';
 
 // Initialize and export the storage instance (as a promise)
-const storagePromise = SupabaseStorage.initialize(); // Call the async initializer
+const storagePromise = SupabaseStorage.initialize();
 
 // Export the promise. Modules importing this will need to await it.
 export const storage = storagePromise;

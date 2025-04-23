@@ -1,59 +1,60 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/clerk-react"; // Import Clerk useAuth
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useModalStore } from "@/lib/store";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { UploadCloud, Car } from "lucide-react"; // Import UploadCloud and Car icons
+import { UploadCloud, Car } from "lucide-react";
 
-import type { Trip } from "@shared/schema"; // Import the full Trip type
+import type { Trip, Expense } from "@shared/schema"; // Import Expense type as well
 
 interface TripCardProps {
-  // Use the imported Trip type, which should include userId
   trip: Trip;
 }
 
 export default function TripCard({ trip }: TripCardProps) {
-  // Add toggleAddEditMileageLog to the destructured store functions
   const { toggleAddExpense, toggleEditTrip, toggleBatchUpload, toggleAddEditMileageLog } = useModalStore();
   const { toast } = useToast();
-  // const [isExporting, setIsExporting] = useState(false); // Remove isExporting state
+  const { getToken } = useAuth(); // Get getToken from Clerk
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  
+  // Removed isEditing state as it wasn't used
+
   // Fetch expenses specifically for this trip
-  const { data: tripExpenses } = useQuery({
-    queryKey: ["/api/expenses", trip.name], // Use trip name in the key for uniqueness
+  const { data: tripExpenses } = useQuery<Expense[]>({ // Add type annotation for data
+    queryKey: ["/api/expenses", trip.name],
     queryFn: async () => {
-      // Construct URL with tripName query parameter
+      const token = await getToken(); // Get Clerk token
+      if (!token) throw new Error("Not authenticated");
+      const headers = { Authorization: `Bearer ${token}` };
       const url = `/api/expenses?tripName=${encodeURIComponent(trip.name)}`;
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) {
-         const errorText = await res.text();
-         throw new Error(`Failed to fetch expenses for trip ${trip.name}: ${errorText}`);
-      }
-      return await res.json();
+      const res = await apiRequest("GET", url, undefined, headers); // Use apiRequest and pass headers
+      // Removed redundant !res.ok check as apiRequest handles it
+      return res.json();
     },
-    // Optional: Add staleTime or other options if needed
+    enabled: !!getToken, // Only run query if getToken is available
   });
-  
+
   const expenseCount = tripExpenses?.length || 0;
   const totalSpent = tripExpenses
-    ? tripExpenses.reduce((sum: number, expense: any) => sum + parseFloat(expense.cost || '0'), 0).toFixed(2)
+    ? tripExpenses.reduce((sum: number, expense: Expense) => sum + parseFloat(expense.cost || '0'), 0).toFixed(2) // Use Expense type
     : "0.00";
-  
-  // Remove the handleExportTrip function entirely
-  
+
+  // Removed handleExportTrip function
+
   const handleDeleteTrip = async () => {
     setIsDeleting(true);
     try {
-      await apiRequest("DELETE", `/api/trips/${trip.id}`);
-      
+      const token = await getToken(); // Get Clerk token
+      if (!token) throw new Error("Not authenticated");
+      const headers = { Authorization: `Bearer ${token}` };
+      await apiRequest("DELETE", `/api/trips/${trip.id}`, undefined, headers); // Use apiRequest and pass headers
+
       queryClient.invalidateQueries({ queryKey: ["/api/trips"] });
       queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
-      
+
       toast({
         title: "Trip deleted",
         description: "The trip has been deleted successfully.",
@@ -68,17 +69,11 @@ export default function TripCard({ trip }: TripCardProps) {
       setIsDeleting(false);
     }
   };
-  
-  // Removed previous placeholder handleEditTrip function
 
   const handleAddExpense = () => {
-    // Set the selected trip in state and open modal
-    toggleAddExpense(trip.name); // Pass the trip name
-    // Ideally we'd pass the trip ID to the modal here, but for simplicity
-    // we'll handle that in the modal component itself
+    toggleAddExpense(trip.name);
   };
-  
-  // Format date safely, handling potential null or Date object
+
   const formattedDate = trip.createdAt
     ? format(new Date(trip.createdAt), "MMM d, yyyy")
     : "Date unknown";
@@ -88,7 +83,6 @@ export default function TripCard({ trip }: TripCardProps) {
       <div className="flex justify-between items-start">
         <div>
           <h4 className="font-medium text-base">{trip.name}</h4>
-          {/* Display description or empty string if null */}
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{trip.description || ''}</p>
           <div className="mt-2 flex items-center">
             <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
@@ -118,8 +112,7 @@ export default function TripCard({ trip }: TripCardProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => toggleEditTrip(trip)} // Call toggleEditTrip with trip data
-            // disabled={isEditing} // Remove disabled state if not needed
+            onClick={() => toggleEditTrip(trip)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -175,7 +168,6 @@ export default function TripCard({ trip }: TripCardProps) {
           <Button
             size="sm"
             className="px-2.5 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-            // Call the store function to open the modal, passing the tripId
             onClick={() => toggleAddEditMileageLog({ tripId: trip.id })}
           >
             <Car className="h-3.5 w-3.5 mr-1" />
@@ -187,15 +179,15 @@ export default function TripCard({ trip }: TripCardProps) {
             size="sm"
             variant="outline"
             className={`px-2.5 py-1 text-xs ${expenseCount === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-            asChild // Important: Allows Button styling on the child <a> tag
-            disabled={expenseCount === 0} // Disable visually if no expenses
+            asChild
+            disabled={expenseCount === 0}
           >
             <a
               href={expenseCount > 0 ? `/api/export-expenses?tripName=${encodeURIComponent(trip.name)}` : undefined}
-              download // Let the browser handle the filename from Content-Disposition
-              target="_blank" // Optional: attempt to open in new tab/window
+              download
+              target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => { if (expenseCount === 0) e.preventDefault(); }} // Prevent click if disabled
+              onClick={(e) => { if (expenseCount === 0) e.preventDefault(); }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -208,7 +200,7 @@ export default function TripCard({ trip }: TripCardProps) {
             size="sm"
             variant="outline"
             className="px-2.5 py-1 text-xs"
-            onClick={() => toggleBatchUpload({ id: trip.id, name: trip.name })} // Pass trip id and name
+            onClick={() => toggleBatchUpload({ id: trip.id, name: trip.name })}
           >
              <UploadCloud className="h-3.5 w-3.5 mr-1" />
              Batch Upload

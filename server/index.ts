@@ -2,6 +2,7 @@ import 'dotenv/config'; // Load environment variables FIRST
 import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet"; // Import helmet
 import serverless from 'serverless-http'; // Import serverless-http
+import { clerkMiddleware } from '@clerk/express'; // Import Clerk middleware
 import { registerRoutes } from "./routes";
 // import { setupVite, serveStatic, log } from "./vite"; // Vite/Static serving not needed for serverless
 import { storage as storagePromise } from "./storage"; // Import the promise
@@ -50,15 +51,16 @@ async function initializeApp() {
     next();
   });
 
+  // Add Clerk middleware BEFORE routes
+  // This will attach auth information to req.auth
+  app.use(clerkMiddleware());
+  console.log("Clerk middleware registered.");
 
   // Await the storage initialization
   const storage = await storagePromise;
   console.log("Storage initialized successfully.");
 
-  // Auth setup removed - Supabase handles auth
-
   // Register routes, passing the initialized storage
-  // Assuming registerRoutes modifies the app instance directly or returns it
   await registerRoutes(app, storage); // Pass storage instance
   console.log("Routes registered.");
 
@@ -72,7 +74,6 @@ async function initializeApp() {
   });
 
   // Vite/Static serving is handled by Netlify build/deployment
-  // No need for setupVite, serveStatic, or server.listen here
 
   return app; // Return the configured app instance
 }
