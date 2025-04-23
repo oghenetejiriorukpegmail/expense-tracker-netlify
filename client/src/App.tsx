@@ -10,6 +10,7 @@ import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "@/lib/protected-route";
 import AuthPage from "@/pages/auth-page";
 import VerifyEmailPage from "@/pages/verify-email-page"; // Import VerifyEmailPage
+import AuthCallbackHandler from "@/pages/auth-callback-handler"; // Import AuthCallbackHandler
 import DashboardPage from "@/pages/dashboard-page";
 import TripsPage from "@/pages/trips-page";
 import ExpensesPage from "@/pages/expenses-page";
@@ -33,16 +34,10 @@ function Router() {
       <ProtectedRoute path="/settings" component={SettingsPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Add Profile route */}
       <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
-      {/* Add routes for Clerk authentication pages and their sub-paths */}
+      {/* Handle all Clerk authentication paths using the callback handler */}
+      <Route path="/auth/:rest*" component={AuthCallbackHandler} />
+      {/* Explicit route for the base auth page if needed, though the wildcard might cover it */}
       <Route path="/auth" component={AuthPage} />
-      <Route path="/auth/sign-in" component={AuthPage} />
-      <Route path="/auth/sign-up" component={AuthPage} />
-      <Route path="/auth/verify-email-address" component={VerifyEmailPage} />
-      <Route path="/auth/sso-callback">
-        <AuthenticateWithRedirectCallback />
-      </Route>
-      {/* Wildcard route to catch other Clerk auth paths like MFA */}
-      <Route path="/auth/:rest*" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );
