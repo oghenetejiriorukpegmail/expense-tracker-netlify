@@ -67,25 +67,31 @@ function App() {
           (payload: RealtimePostgresChangesPayload<BackgroundTask>) => {
             console.log('Background task update received:', payload);
 
-            // Access properties directly now that the type is known
-            const oldStatus = payload.old?.status;
-            const newStatus = payload.new?.status;
-            const taskType = payload.new?.type;
-            const taskId = payload.new?.id;
+            // Use a more specific type guard for payload.new
+            if (!payload.new || !('id' in payload.new)) {
+              console.log('Received update payload without new data or required fields, skipping.');
+              return;
+            }
+
+            // Use a type guard for payload.old before accessing properties
+            const oldStatus = (payload.old && 'status' in payload.old) ? payload.old.status : undefined;
+            const newStatus = payload.new.status;
+            const taskType = payload.new.type;
+            const taskId = payload.new.id;
 
             if (oldStatus !== newStatus && (newStatus === 'completed' || newStatus === 'failed')) {
               console.log(`Task ${taskId} (${taskType}) finished with status: ${newStatus}`);
 
               let resultData: any = null;
               // Check if result exists and is a string before parsing
-              if (payload.new?.result && typeof payload.new.result === 'string') {
+              if (payload.new.result && typeof payload.new.result === 'string') {
                   try {
                       resultData = JSON.parse(payload.new.result);
                   } catch (e) {
                       console.error(`Task ${taskId}: Failed to parse result JSON:`, payload.new.result, e);
                   }
               }
-              const errorMsg = payload.new?.error; // error is already string | null
+              const errorMsg = payload.new.error; // error is already string | null
 
               if (newStatus === 'completed') {
                 let description: React.ReactNode = resultData?.message || `${taskType} task completed successfully.`; // Type description as ReactNode

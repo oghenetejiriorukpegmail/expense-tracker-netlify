@@ -1,21 +1,26 @@
-import { useLocation, Link } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
+// Removed: import { useAuth } from "@/hooks/use-auth";
+import { useAuth, UserButton, SignedIn, SignedOut } from "@clerk/clerk-react"; // Import Clerk components/hooks
 import { useSettingsStore, useSidebarStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { UserIcon, LogOut, Moon, Sun, Car } from "lucide-react"; // Import Car icon
+import { UserIcon, LogOut, Moon, Sun, Car } from "lucide-react"; // Keep LogOut for SignedOut state if needed
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { user, logoutMutation } = useAuth();
+  // Removed: const { user, logoutMutation } = useAuth();
   const { theme, toggleTheme } = useSettingsStore();
   const { isOpen, toggle, close } = useSidebarStore();
 
-  const handleLogout = () => {
-    logoutMutation.mutate();
-  };
+  // Removed: handleLogout function (Clerk's UserButton handles this)
 
   const isActiveRoute = (path: string) => {
     return location === path;
+  };
+
+  // Helper function for navigation and closing sidebar
+  const navigateAndClose = (path: string) => {
+    window.location.href = path; // Consider using wouter's navigate for SPA behavior
+    close();
   };
 
   return (
@@ -30,11 +35,18 @@ export default function Sidebar() {
           </Button>
           <h1 className="text-lg font-bold">ExpenseTracker</h1>
         </div>
-        <div>
-          <Button variant="ghost" size="icon" onClick={toggleTheme}>
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-        </div>
+        <div className="flex items-center space-x-2">
+           <Button variant="ghost" size="icon" onClick={toggleTheme}>
+             {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+           </Button>
+           {/* Add UserButton to mobile header */}
+           <SignedIn>
+             <UserButton afterSignOutUrl="/auth" />
+           </SignedIn>
+           <SignedOut>
+             {/* Optionally add a sign-in button here for mobile header */}
+           </SignedOut>
+         </div>
       </div>
 
       {/* Sidebar Overlay for Mobile */}
@@ -54,66 +66,57 @@ export default function Sidebar() {
             <h1 className="text-xl font-bold">ExpenseTracker</h1>
           </div>
         </div>
-        
-        {user && (
+
+        {/* Use Clerk's SignedIn component to show user info */}
+        <SignedIn>
           <div className="p-4 border-b dark:border-gray-700">
-            <div className="flex items-center space-x-3">
-              <div className="bg-primary text-white p-2 rounded-full">
-                <UserIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-medium">{user.username}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">User</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <nav className="p-2 space-y-1">
+             {/* Use Clerk's UserButton for profile management and sign out */}
+             <UserButton afterSignOutUrl="/auth" />
+           </div>
+        </SignedIn>
+        {/* Optionally show something different when signed out */}
+        {/* <SignedOut>
+          <div className="p-4 border-b dark:border-gray-700">
+             <p>Please sign in</p>
+           </div>
+        </SignedOut> */}
+
+        <nav className="p-2 space-y-1 flex-grow"> {/* Added flex-grow */}
           <div
             className={`flex items-center p-3 rounded-lg cursor-pointer ${
               isActiveRoute("/")
                 ? "text-primary bg-blue-50 dark:bg-blue-900/20"
                 : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
-            onClick={() => {
-              window.location.href = "/";
-              close();
-            }}
+            onClick={() => navigateAndClose("/")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             <span>Dashboard</span>
           </div>
-          
+
           <div
             className={`flex items-center p-3 rounded-lg cursor-pointer ${
               isActiveRoute("/trips")
                 ? "text-primary bg-blue-50 dark:bg-blue-900/20"
                 : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
-            onClick={() => {
-              window.location.href = "/trips";
-              close();
-            }}
+            onClick={() => navigateAndClose("/trips")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
             <span>Trips</span>
           </div>
-          
+
           <div
             className={`flex items-center p-3 rounded-lg cursor-pointer ${
               isActiveRoute("/expenses")
                 ? "text-primary bg-blue-50 dark:bg-blue-900/20"
                 : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
-            onClick={() => {
-              window.location.href = "/expenses";
-              close();
-            }}
+            onClick={() => navigateAndClose("/expenses")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -128,10 +131,7 @@ export default function Sidebar() {
                 ? "text-primary bg-blue-50 dark:bg-blue-900/20"
                 : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
-            onClick={() => {
-              window.location.href = "/mileage-logs";
-              close();
-            }}
+            onClick={() => navigateAndClose("/mileage-logs")}
           >
             <Car className="h-5 w-5 mr-3" /> {/* Use Car icon */}
             <span>Mileage Logs</span>
@@ -144,10 +144,7 @@ export default function Sidebar() {
                 ? "text-primary bg-blue-50 dark:bg-blue-900/20"
                 : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
-            onClick={() => {
-              window.location.href = "/profile";
-              close();
-            }}
+            onClick={() => navigateAndClose("/profile")}
           >
             <UserIcon className="h-5 w-5 mr-3" />
             <span>Profile</span>
@@ -160,10 +157,7 @@ export default function Sidebar() {
                 ? "text-primary bg-blue-50 dark:bg-blue-900/20"
                 : "hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
-            onClick={() => {
-              window.location.href = "/settings";
-              close();
-            }}
+            onClick={() => navigateAndClose("/settings")}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -172,7 +166,7 @@ export default function Sidebar() {
             <span>Settings</span>
           </div>
         </nav>
-        
+
         <div className="mt-auto p-4 border-t dark:border-gray-700">
           <Button variant="ghost" className="w-full justify-start" onClick={toggleTheme}>
             {theme === "dark" ? (
@@ -187,16 +181,19 @@ export default function Sidebar() {
               </>
             )}
           </Button>
-          
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start mt-2" 
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-          >
-            <LogOut className="mr-2 h-5 w-5" />
-            <span>{logoutMutation.isPending ? "Logging out..." : "Logout"}</span>
-          </Button>
+
+          {/* Removed manual Logout button - UserButton handles this */}
+          {/* <SignedIn>
+            <Button
+              variant="ghost"
+              className="w-full justify-start mt-2"
+              // onClick={handleLogout} // UserButton handles logout
+              // disabled={logoutMutation.isPending}
+            >
+              <LogOut className="mr-2 h-5 w-5" />
+              <span>Logout</span>
+            </Button>
+          </SignedIn> */}
         </div>
       </aside>
     </>
