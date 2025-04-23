@@ -13,7 +13,8 @@ export interface IStorage {
   // Removed getUserByAuthId
   getUserByClerkId(clerkUserId: string): Promise<PublicUser | undefined>; // Added getUserByClerkId
   getUserByEmail(email: string): Promise<User | undefined>;
-  // Removed createUser (handled by Clerk)
+  // User creation with Clerk ID
+  createUserWithClerkId(clerkUserId: string, email?: string, firstName?: string, lastName?: string): Promise<PublicUser>;
   updateUserProfile(userId: number, profileData: { firstName: string; email: string; bio?: string | null; lastName?: string | null; phoneNumber?: string | null }): Promise<User | undefined>; // Added missing optional fields
   // Removed updateUserPassword (handled by Clerk)
 

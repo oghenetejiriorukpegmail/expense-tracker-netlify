@@ -86,6 +86,10 @@ export class SupabaseStorage implements IStorage {
   async updateUserProfile(userId: number, profileData: { firstName: string; lastName?: string | null; phoneNumber?: string | null; email: string; bio?: string | null }): Promise<User | undefined> {
     return userStorage.updateUserProfile(this.db, userId, profileData);
   }
+  
+  async createUserWithClerkId(clerkUserId: string, email: string = '', firstName: string = '', lastName: string = ''): Promise<PublicUser> {
+    return userStorage.createUserWithClerkId(this.db, clerkUserId, email, firstName, lastName);
+  }
 
   // --- Trip methods ---
   async getTrip(id: number): Promise<Trip | undefined> {

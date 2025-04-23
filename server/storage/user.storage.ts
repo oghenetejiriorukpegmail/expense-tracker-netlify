@@ -2,6 +2,7 @@ import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '@shared/schema';
 import type { User, PublicUser, InsertUser } from "@shared/schema";
 import { eq } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
 
 // User methods extracted from SupabaseStorage
 export async function getUserById(db: PostgresJsDatabase<typeof schema>, id: number): Promise<User | undefined> {
@@ -68,4 +69,37 @@ export async function updateUserProfile(db: PostgresJsDatabase<typeof schema>, u
     return undefined;
   }
   return result[0];
+}
+
+// Create a new user with Clerk ID
+export async function createUserWithClerkId(db: PostgresJsDatabase<typeof schema>, clerkUserId: string, email: string = '', firstName: string = '', lastName: string = ''): Promise<PublicUser> {
+  // Generate a random username based on the email or a UUID
+  const username = email ? email.split('@')[0] + '-' + Math.floor(Math.random() * 10000) : 'user-' + uuidv4().substring(0, 8);
+  
+  // Create a random password (not used with Clerk auth, but required by schema)
+  const password = uuidv4();
+  
+  const userData = {
+    username,
+    password,
+    email: email || `${username}@example.com`, // Fallback email if none provided
+    firstName: firstName || '',
+    lastName: lastName || '',
+    phoneNumber: '',
+    authUserId: clerkUserId,
+  };
+  
+  const result = await db.insert(schema.users)
+    .values(userData)
+    .returning();
+  
+  if (!result.length) {
+    throw new Error('Failed to create user');
+  }
+  
+  const user = result[0];
+  
+  // Return public user without password
+  const { password: _, ...publicUser } = user;
+  return publicUser as PublicUser;
 }
