@@ -89,17 +89,38 @@ export async function createUserWithClerkId(db: PostgresJsDatabase<typeof schema
     authUserId: clerkUserId,
   };
   
-  const result = await db.insert(schema.users)
-    .values(userData)
-    .returning();
+  // DIAGNOSTIC LOG: Log the user data being inserted
+  console.log("DIAGNOSTIC - User creation data:", {
+    attemptedColumns: Object.keys(userData),
+    passwordIncluded: userData.hasOwnProperty('password'),
+    clerkUserId,
+    username,
+    email: userData.email
+  });
   
-  if (!result.length) {
-    throw new Error('Failed to create user');
+  try {
+    const result = await db.insert(schema.users)
+      .values(userData)
+      .returning();
+    
+    if (!result.length) {
+      throw new Error('Failed to create user');
+    }
+    
+    const user = result[0];
+    
+    // Return public user without password
+    const { password: _, ...publicUser } = user;
+    return publicUser as PublicUser;
+  } catch (error: any) {
+    // DIAGNOSTIC LOG: Enhanced error logging
+    console.error("DIAGNOSTIC - User creation error details:", {
+      error: error?.toString?.() || 'Unknown error',
+      errorObject: JSON.stringify(error, Object.getOwnPropertyNames(error || {})),
+      query: error?.query || 'Query not available',
+      params: error?.params || 'Params not available',
+      code: error?.code || 'Code not available'
+    });
+    throw error;
   }
-  
-  const user = result[0];
-  
-  // Return public user without password
-  const { password: _, ...publicUser } = user;
-  return publicUser as PublicUser;
 }
