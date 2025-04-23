@@ -7,7 +7,7 @@ import { supabase } from "./lib/supabaseClient"; // Import supabase client
 import { RealtimeChannel, RealtimePostgresChangesPayload, REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
 import { useToast } from "./hooks/use-toast"; // Import useToast
 import NotFound from "@/pages/not-found";
-import { AuthProvider } from "@/hooks/use-auth";
+// Removed: import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import AuthPage from "@/pages/auth-page";
 import DashboardPage from "@/pages/dashboard-page";
@@ -139,21 +139,20 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-        {/* Add EditTripModal alongside other modals */}
-        <EditTripModal />
-        <EditExpenseModal />
-        <BatchUploadModal /> {/* Render BatchUploadModal */}
-        {/* Render Mileage Log Modal conditionally */}
-        <AddEditMileageLogModal
-          isOpen={addEditMileageLogOpen}
-          onClose={() => toggleAddEditMileageLog()} // Close modal using toggle function
-          mileageLog={editingMileageLog}
-          tripId={mileageLogTripId}
-        />
-      </AuthProvider>
+      {/* Removed AuthProvider wrapper */}
+      <Router />
+      <Toaster />
+      {/* Add EditTripModal alongside other modals */}
+      <EditTripModal />
+      <EditExpenseModal />
+      <BatchUploadModal /> {/* Render BatchUploadModal */}
+      {/* Render Mileage Log Modal conditionally */}
+      <AddEditMileageLogModal
+        isOpen={addEditMileageLogOpen}
+        onClose={() => toggleAddEditMileageLog()} // Close modal using toggle function
+        mileageLog={editingMileageLog}
+        tripId={mileageLogTripId}
+      />
     </QueryClientProvider>
   );
 }
