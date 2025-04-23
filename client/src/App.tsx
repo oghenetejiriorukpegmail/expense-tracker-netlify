@@ -35,9 +35,14 @@ function Router() {
       <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Add Profile route */}
       <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
       {/* Handle all Clerk authentication paths using the callback handler */}
+      <Route path="/auth/sign-in/:rest*" component={AuthCallbackHandler} />
+      <Route path="/auth/sign-up/:rest*" component={AuthCallbackHandler} />
+      <Route path="/auth/sso-callback" component={AuthCallbackHandler} />
       <Route path="/auth/:rest*" component={AuthCallbackHandler} />
-      {/* Explicit route for the base auth page if needed, though the wildcard might cover it */}
+      {/* Explicit route for the base auth pages */}
       <Route path="/auth" component={AuthPage} />
+      <Route path="/auth/sign-in" component={AuthPage} />
+      <Route path="/auth/sign-up" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );

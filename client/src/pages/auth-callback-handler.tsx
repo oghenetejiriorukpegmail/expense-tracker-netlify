@@ -6,12 +6,17 @@ import React from "react";
 export default function AuthCallbackHandler() {
   const [location] = useLocation();
 
-  // Check if the current path is an SSO callback path
-  if (location.includes("/sso-callback")) {
-    // Render the Clerk callback component for SSO
+  // Check if the current path includes any of the Clerk callback paths
+  if (location.includes("/sso-callback") ||
+      location.includes("/sign-in/factor-") ||
+      location.includes("/sign-in/sso-callback") ||
+      location.includes("/sign-up/sso-callback") ||
+      location.includes("fallback_redirect_url")) {
+    console.log("Rendering Clerk callback handler for path:", location);
+    // Render the Clerk callback component for any authentication callback
     return <AuthenticateWithRedirectCallback />;
   }
 
-  // If it's not an SSO callback, render the main AuthPage
+  // If it's not a callback path, render the main AuthPage
   return <AuthPage />;
 }
