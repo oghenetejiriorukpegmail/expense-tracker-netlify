@@ -1,15 +1,15 @@
 import Database from 'better-sqlite3';
-import path from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url'; // Import url module
 
 console.log("Attempting to reset Drizzle migration tracking...");
 
 // ESM equivalent for __dirname
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 try {
-  const dbPath = path.join(__dirname, '..', 'sqlite.db'); // This should now work
+  const dbPath = join(__dirname, '..', 'sqlite.db'); // This should now work
   console.log(`Database path: ${dbPath}`);
   
   const sqlite = new Database(dbPath);

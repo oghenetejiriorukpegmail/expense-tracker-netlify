@@ -1,6 +1,10 @@
 // Configuration management for the application
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import { join, resolve } from 'path';
+
+// Use direct function imports from path to avoid issues with default exports
+// Debug logging to understand what's happening
+console.log('Current working directory:', process.cwd());
 
 // Define the configuration interface
 interface AppConfig {
@@ -21,8 +25,9 @@ const defaultConfig: AppConfig = {
   ocrTemplate: 'travel' // Set travel as the default template
 };
 
-// Path to the config file
-const configPath = path.join(process.cwd(), 'app-config.json');
+// Path to the config file - use direct function import
+const configPath = join(process.cwd(), 'app-config.json');
+console.log('Config path:', configPath);
 
 // Load configuration from file
 export function loadConfig(): AppConfig {

@@ -1,5 +1,5 @@
-import path from "path";
-import fs from "fs";
+import { join } from "path";
+import * as fs from "fs";
 import fetch from "node-fetch"; // Using node-fetch
 
 // --- Constants and Types ---
