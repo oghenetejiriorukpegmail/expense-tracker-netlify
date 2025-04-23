@@ -53,7 +53,16 @@ async function initializeApp() {
 
   // Add Clerk middleware BEFORE routes
   // This will attach auth information to req.auth
-  app.use(clerkMiddleware());
+  const clerkPublishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY || process.env.VITE_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  if (!clerkPublishableKey) {
+    console.warn("Warning: Clerk publishable key is missing. Authentication may not work properly.");
+  } else {
+    console.log("Using Clerk publishable key:", clerkPublishableKey.substring(0, 10) + "...");
+  }
+  
+  app.use(clerkMiddleware({
+    publishableKey: clerkPublishableKey
+  }));
   console.log("Clerk middleware registered.");
 
   // Await the storage initialization
