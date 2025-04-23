@@ -15,9 +15,18 @@ createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ClerkProvider
       publishableKey={PUBLISHABLE_KEY}
-      fallbackRedirectUrl="/" // Use fallbackRedirectUrl instead of afterSignInUrl
-      afterSignUpUrl="/"
+      redirectUrl="/"
+      signInUrl="/auth/sign-in"
+      signUpUrl="/auth/sign-up"
       afterSignOutUrl="/"
+      appearance={{
+        baseTheme: undefined,
+        variables: { colorPrimary: '#007bff' },
+        elements: {
+          formButtonPrimary: 'bg-primary hover:bg-primary/90 text-white',
+          card: 'shadow-md rounded-md',
+        },
+      }}
     >
       <App />
     </ClerkProvider>

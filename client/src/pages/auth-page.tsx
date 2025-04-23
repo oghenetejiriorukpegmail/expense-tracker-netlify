@@ -27,7 +27,13 @@ export default function AuthPage() {
                 routing="path"
                 signUpUrl="/auth/sign-up"
                 redirectUrl="/"
-                fallbackRedirectUrl="/" // Use fallbackRedirectUrl
+                appearance={{
+                  elements: {
+                    formButtonPrimary: 'bg-primary hover:bg-primary/90 text-white',
+                    card: 'shadow-none',
+                    formFieldInput: 'border-input',
+                  }
+                }}
               />
             ) : (
               <SignUp
@@ -35,7 +41,13 @@ export default function AuthPage() {
                 routing="path"
                 signInUrl="/auth/sign-in"
                 redirectUrl="/"
-                fallbackRedirectUrl="/" // Use fallbackRedirectUrl
+                appearance={{
+                  elements: {
+                    formButtonPrimary: 'bg-primary hover:bg-primary/90 text-white',
+                    card: 'shadow-none',
+                    formFieldInput: 'border-input',
+                  }
+                }}
               />
             )}
           </CardContent>
