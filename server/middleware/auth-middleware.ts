@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 import type { SupabaseStorage } from "../supabase-storage";
 
 // Define request type augmentation for Clerk auth
@@ -37,13 +38,32 @@ export function createAuthMiddleware(storage: SupabaseStorage) {
           // Log headers to see what information is available
           console.log("Auth Debug: Request headers:", JSON.stringify(req.headers, null, 2));
           
-          // For now, create a user with minimal information
-          // We'll need to implement a proper solution to get user details from Clerk
-          const email = '';
-          const firstName = '';
-          const lastName = '';
+          // Fetch user details from Clerk
+          console.log(`Auth Debug: Fetching user details from Clerk for ID ${clerkUserId}`);
+          let email = '';
+          let firstName = '';
+          let lastName = '';
           
-          console.log(`Auth Debug: Extracted user info - Email: ${email}, First Name: ${firstName}, Last Name: ${lastName}`);
+          try {
+            const clerkUser = await clerkClient.users.getUser(clerkUserId);
+            
+            // Extract user information from Clerk
+            if (clerkUser) {
+              // Get primary email if available
+              if (clerkUser.emailAddresses && clerkUser.emailAddresses.length > 0) {
+                const primaryEmail = clerkUser.emailAddresses.find(email => email.id === clerkUser.primaryEmailAddressId);
+                email = primaryEmail ? primaryEmail.emailAddress : clerkUser.emailAddresses[0].emailAddress;
+              }
+              
+              firstName = clerkUser.firstName || '';
+              lastName = clerkUser.lastName || '';
+              
+              console.log(`Auth Debug: Successfully fetched user details from Clerk - Email: ${email}, First Name: ${firstName}, Last Name: ${lastName}`);
+            }
+          } catch (clerkError) {
+            console.error("Auth Debug: Error fetching user details from Clerk:", clerkError);
+            // Continue with empty values if Clerk API fails
+          }
           
           // Create a new user with the Clerk ID
           console.log(`Auth Debug: About to create user with Clerk ID ${clerkUserId}`);
