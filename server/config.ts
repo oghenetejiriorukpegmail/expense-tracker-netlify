@@ -1,8 +1,8 @@
 // Configuration management for the application
+// Import modules with ES module syntax
 import fs from 'fs';
-import { join, resolve } from 'path';
+import * as path from 'path';
 
-// Use direct function imports from path to avoid issues with default exports
 // Debug logging to understand what's happening
 console.log('Current working directory:', process.cwd());
 
@@ -25,8 +25,8 @@ const defaultConfig: AppConfig = {
   ocrTemplate: 'travel' // Set travel as the default template
 };
 
-// Path to the config file - use direct function import
-const configPath = join(process.cwd(), 'app-config.json');
+// Path to the config file - use path.join directly with require-style import
+const configPath = path.join(process.cwd(), 'app-config.json');
 console.log('Config path:', configPath);
 
 // Load configuration from file
