@@ -28,5 +28,5 @@ A full-stack expense tracking application built with:
 - Fixed sign-in/sign-up page routing and redirection
 - Fixed authentication redirect after successful sign-in
 - Implemented `AuthCallbackHandler` component to correctly handle Clerk authentication sub-paths (e.g., SSO, MFA)
-- Updated deprecated Clerk redirect props (`afterSignInUrl`) to use `fallbackRedirectUrl`
 - Enhanced auth callback handling to support all Clerk SSO paths and fallback redirects
+- Updated Clerk redirect configuration with proper appearance settings and redirect URLs
