@@ -8,6 +8,7 @@
     // Remove frontend-specific options if necessary (like "jsx": "preserve", "types": ["vite/client"])
     // Keep "baseUrl" and "paths" if needed for server-side imports
     // Remove "allowImportingTsExtensions" as it's invalid when noEmit is false
+    "allowImportingTsExtensions": false, // Explicitly override inherited value
     "jsx": "react-jsx", // Adjust if server uses JSX differently or not at all
     "types": ["node"] // Use Node types for server
   },
