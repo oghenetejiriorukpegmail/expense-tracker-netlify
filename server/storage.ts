@@ -46,49 +46,40 @@ export interface IStorage {
 // Import the new Supabase storage implementation
 import { SupabaseStorage } from './supabase-storage';
 
-// Initialize and export the storage instance (as a promise)
-console.log("[STORAGE] Starting SupabaseStorage initialization...");
-console.log("[STORAGE] SupabaseStorage before checks:", SupabaseStorage);
-console.log("[STORAGE] SupabaseStorage.initialize before checks:", SupabaseStorage ? SupabaseStorage.initialize : 'SupabaseStorage is null/undefined');
-console.log("[STORAGE] Starting SupabaseStorage initialization...");
+// Export an async function to initialize the storage
+export async function initializeStorage(): Promise<IStorage> {
+  console.log("[STORAGE] initializeStorage function called.");
+  console.log("[STORAGE] SupabaseStorage before checks:", SupabaseStorage);
+  console.log("[STORAGE] SupabaseStorage.initialize before checks:", SupabaseStorage ? SupabaseStorage.initialize : 'SupabaseStorage is null/undefined');
 
-// Check if SupabaseStorage is properly imported
-if (!SupabaseStorage) {
-  console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined");
-  throw new Error("SupabaseStorage class is undefined. Check import paths and circular dependencies.");
-}
+  // Check if SupabaseStorage is properly imported
+  if (!SupabaseStorage) {
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined in initializeStorage");
+    throw new Error("SupabaseStorage class is undefined. Check import paths and circular dependencies.");
+  }
 
-console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
-console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
+  console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
+  console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
 
-// Ensure SupabaseStorage.initialize exists before calling it
-if (typeof SupabaseStorage.initialize !== 'function') {
-  console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function");
-  throw new Error("SupabaseStorage.initialize is not a function. Check class implementation.");
-}
+  // Ensure SupabaseStorage.initialize exists before calling it
+  if (typeof SupabaseStorage.initialize !== 'function') {
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function in initializeStorage");
+    throw new Error("SupabaseStorage.initialize is not a function. Check class implementation.");
+  }
 
-const storagePromise = SupabaseStorage.initialize()
-  .then((storage: any) => {
-    console.log("[STORAGE] SupabaseStorage initialization successful");
-    console.log("[STORAGE] Storage instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
-    return storage;
-  })
-  .catch((error: Error) => {
-    console.error("[STORAGE] FATAL ERROR: SupabaseStorage initialization failed:", error);
-    console.error("[STORAGE] Error stack:", error.stack);
-    // Re-throw the error to ensure the promise is rejected
-    throw error;
-  });
-
-// Add a helper function to safely access storage
-export async function getStorage() {
   try {
-    return await storagePromise;
-  } catch (error) {
-    console.error("[STORAGE] Error accessing storage:", error);
-    throw new Error("Failed to initialize storage. Please check server logs.");
+    console.log("[STORAGE] Calling SupabaseStorage.initialize()...");
+    const storageInstance = await SupabaseStorage.initialize();
+    console.log("[STORAGE] SupabaseStorage initialization successful");
+    console.log("[STORAGE] Storage instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storageInstance)));
+    return storageInstance;
+  } catch (error: any) {
+    console.error("[STORAGE] FATAL ERROR: SupabaseStorage initialization failed in initializeStorage:", error);
+    console.error("[STORAGE] Error stack:", error.stack);
+    throw error; // Re-throw the error
   }
 }
 
-// Export the promise. Modules importing this will need to await it.
-export const storage = storagePromise;
+// Remove the direct export of the promise and the getStorage helper
+// export const storage = storagePromise; // Removed
+// export async function getStorage() { ... } // Removed
