@@ -70,20 +70,8 @@ export class SupabaseStorage implements IStorage {
     console.log("[SupabaseStorage] Instance initialized successfully.");
   }
 
-  // Static factory method
-  public static async createAndInitialize(): Promise<SupabaseStorage> {
-    console.log("[SupabaseStorage] createAndInitialize called.");
-    const instance = new SupabaseStorage();
-    try {
-      await instance.initializeInstance();
-      console.log("[SupabaseStorage] createAndInitialize successful.");
-      return instance;
-    } catch (error) {
-      console.error("[SupabaseStorage] FATAL ERROR during createAndInitialize:", error);
-      // Decide how to handle this - maybe re-throw or exit
-      throw new Error("Failed to create and initialize SupabaseStorage.");
-    }
-  }
+  // Remove static factory method
+  // public static async createAndInitialize(): Promise<SupabaseStorage> { ... }
 
   // --- User methods ---
   async getUserById(id: number): Promise<User | undefined> {
@@ -198,3 +186,22 @@ export class SupabaseStorage implements IStorage {
   }
 
 }
+
+// --- Initialize and Export Instance Promise ---
+console.log("[SupabaseStorage] Starting self-initialization...");
+
+export const storageInstancePromise: Promise<IStorage> = (async () => {
+  console.log("[SupabaseStorage] IIAFE started.");
+  const instance = new (SupabaseStorage as any)(); // Use 'any' to bypass private constructor check
+  try {
+    await instance.initializeInstance();
+    console.log("[SupabaseStorage] IIAFE initialization successful.");
+    return instance;
+  } catch (error) {
+    console.error("[SupabaseStorage] FATAL ERROR during IIAFE initialization:", error);
+    // Propagate the error by throwing it, so the promise rejects
+    throw new Error(`Failed to initialize SupabaseStorage: ${error instanceof Error ? error.message : String(error)}`);
+  }
+})();
+
+console.log("[SupabaseStorage] storageInstancePromise created.");

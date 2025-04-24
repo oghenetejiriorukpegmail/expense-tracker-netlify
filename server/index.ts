@@ -5,7 +5,7 @@ import serverless from 'serverless-http'; // Import serverless-http
 import { clerkMiddleware } from '@clerk/express'; // Import Clerk middleware
 import { registerRoutes } from "./routes";
 // import { setupVite, serveStatic, log } from "./vite"; // Vite/Static serving not needed for serverless
-import { initializeStorage } from "./storage"; // Import the initialization function
+import { storage as storagePromise } from "./storage"; // Import the exported promise
 import { initializeEnvFromConfig } from "./config"; // Import config initialization
 
 // Initialize environment variables from config file first
@@ -70,7 +70,7 @@ async function initializeApp() {
   try {
     console.log("[SERVER] Awaiting storage initialization...");
     
-    storage = await initializeStorage(); // Call the new initialization function
+    storage = await storagePromise; // Await the imported promise
     
     console.log("[SERVER] Storage initialized successfully.");
     console.log("[SERVER] Storage type:", typeof storage);
