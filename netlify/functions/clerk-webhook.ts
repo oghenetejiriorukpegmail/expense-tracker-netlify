@@ -1,8 +1,9 @@
 import { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
-// Import dynamically to handle ES modules vs CommonJS issues
 import { Webhook } from "svix";
 import { eq } from "drizzle-orm";
 import * as schema from "../../shared/schema";
+// Import the storage promise directly
+import { storage } from "../../server/storage";
 
 // Define the structure of Clerk webhook events
 interface ClerkWebhookEvent {
@@ -48,8 +49,8 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     };
   }
 
-  // Using any type since we're importing dynamically
-  let storage: any = null;
+  // Will be initialized from the imported storage promise
+  let storageInstance: any = null;
   
   try {
     // Verify the webhook signature
@@ -88,9 +89,8 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       };
     }
 
-    // Import and initialize the Supabase storage dynamically
-    const { SupabaseStorage } = await import("../../server/supabase-storage");
-    storage = await SupabaseStorage.initialize();
+    // Await the storage promise to get the initialized instance
+    storageInstance = await storage;
 
     // Extract user data from the webhook payload
     const { type, data } = payload;
@@ -107,7 +107,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
         const lastName = data.last_name || "";
 
         // Check if user already exists (idempotency)
-        const existingUser = await storage.getUserByClerkId(clerkUserId);
+        const existingUser = await storageInstance.getUserByClerkId(clerkUserId);
         if (existingUser) {
           console.log(`User ${clerkUserId} already exists in Supabase, skipping creation`);
           return {
@@ -118,7 +118,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
 
         // Create a new user in Supabase
         console.log(`Creating new user in Supabase for Clerk user ${clerkUserId}`);
-        const newUser = await storage.createUserWithClerkId(clerkUserId, email, firstName, lastName);
+        const newUser = await storageInstance.createUserWithClerkId(clerkUserId, email, firstName, lastName);
         
         return {
           statusCode: 200,
@@ -134,10 +134,10 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
         const phoneNumber = data.phone_numbers?.[0]?.phone_number || "";
 
         // Find the user in Supabase
-        const existingUser = await storage.getUserByClerkId(clerkUserId);
+        const existingUser = await storageInstance.getUserByClerkId(clerkUserId);
         if (!existingUser) {
           console.log(`User ${clerkUserId} not found in Supabase, creating instead of updating`);
-          const newUser = await storage.createUserWithClerkId(clerkUserId, email, firstName, lastName);
+          const newUser = await storageInstance.createUserWithClerkId(clerkUserId, email, firstName, lastName);
           return {
             statusCode: 200,
             body: JSON.stringify({ message: "User created instead of updated", userId: newUser.id }),
@@ -146,7 +146,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
 
         // Update the user in Supabase
         console.log(`Updating user ${existingUser.id} in Supabase for Clerk user ${clerkUserId}`);
-        const updatedUser = await storage.updateUserProfile(existingUser.id, {
+        const updatedUser = await storageInstance.updateUserProfile(existingUser.id, {
           firstName,
           lastName: lastName || null,
           phoneNumber: phoneNumber || null,
@@ -162,7 +162,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
 
       case "user.deleted": {
         // Find the user in Supabase
-        const existingUser = await storage.getUserByClerkId(clerkUserId);
+        const existingUser = await storageInstance.getUserByClerkId(clerkUserId);
         if (!existingUser) {
           console.log(`User ${clerkUserId} not found in Supabase, nothing to delete`);
           return {
@@ -176,7 +176,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
         console.log(`Deleting user ${existingUser.id} from Supabase for Clerk user ${clerkUserId}`);
         
         // Get the database connection from the storage instance
-        const db = (storage as any).db;
+        const db = (storageInstance as any).db;
         if (!db) {
           throw new Error("Database connection not available");
         }
