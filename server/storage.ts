@@ -44,7 +44,7 @@ export interface IStorage {
 // MemStorage class removed as it's no longer used.
 
 // Import the new Supabase storage implementation
-import SupabaseStorage from './supabase-storage';
+import { SupabaseStorage } from './supabase-storage';
 
 // Initialize and export the storage instance (as a promise)
 console.log("[STORAGE] Starting SupabaseStorage initialization...");

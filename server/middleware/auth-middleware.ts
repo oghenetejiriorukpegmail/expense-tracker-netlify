@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/clerk-sdk-node";
-import type SupabaseStorage from "../supabase-storage";
+import type { SupabaseStorage } from "../supabase-storage";
 
 // Define request type augmentation for Clerk auth
 interface ClerkRequest extends Request {

@@ -36,8 +36,7 @@ if (!supabaseServiceKey) {
   process.exit(1);
 }
 
-// Export as default and named export to maintain backward compatibility
-export default class SupabaseStorage implements IStorage {
+export class SupabaseStorage implements IStorage {
   private db: PostgresJsDatabase<typeof schema>;
   private client: postgres.Sql;
   // Removed supabase client instance as it's initialized in file.storage.ts
