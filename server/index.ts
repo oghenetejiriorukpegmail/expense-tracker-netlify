@@ -69,16 +69,17 @@ async function initializeApp() {
   let storage;
   try {
     console.log("[SERVER] Awaiting storage initialization...");
+    console.log("[SERVER] Module type:", typeof module !== 'undefined' ? 'CommonJS' : 'ESM');
+    console.log("[SERVER] initializeStorage type:", typeof initializeStorage);
     
     storage = await initializeStorage(); // Call the initialization function
     
     console.log("[SERVER] Storage initialized successfully.");
-    // Remove diagnostic logs
-    // console.log("[SERVER] Storage type:", typeof storage);
-    // console.log("[SERVER] Storage is null or undefined:", storage === null || storage === undefined);
-    // if (storage) {
-    //   console.log("[SERVER] Storage methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
-    // }
+    console.log("[SERVER] Storage type:", typeof storage);
+    console.log("[SERVER] Storage is null or undefined:", storage === null || storage === undefined);
+    if (storage) {
+      console.log("[SERVER] Storage methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
+    }
   } catch (error) {
     console.error("[SERVER] CRITICAL ERROR: Failed to initialize storage:", error);
     if (error instanceof Error) {

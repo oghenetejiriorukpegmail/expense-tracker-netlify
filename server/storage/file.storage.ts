@@ -17,16 +17,22 @@ if (!supabaseServiceKey) {
 // Initialize Supabase client specifically for storage operations
 console.log("[FILE_STORAGE] Initializing Supabase client with URL:", supabaseUrl);
 console.log("[FILE_STORAGE] Service key provided:", !!supabaseServiceKey);
+console.log("[FILE_STORAGE] Module type:", typeof module !== 'undefined' ? 'CommonJS' : 'ESM');
+console.log("[FILE_STORAGE] Module path:", __filename);
 
 let supabase: SupabaseClient;
 try {
+  console.log("[FILE_STORAGE] Creating Supabase client...");
   supabase = createClient(supabaseUrl!, supabaseServiceKey!);
   console.log("[FILE_STORAGE] Supabase client initialized successfully");
+  console.log("[FILE_STORAGE] Supabase client type:", typeof supabase);
+  console.log("[FILE_STORAGE] Supabase client properties:", Object.keys(supabase));
   console.log("[FILE_STORAGE] Supabase client has storage:", !!supabase.storage);
   
   // Test if storage is accessible
   if (supabase.storage) {
     console.log("[FILE_STORAGE] Storage buckets available:", typeof supabase.storage.from === 'function');
+    console.log("[FILE_STORAGE] Storage methods:", Object.keys(supabase.storage));
   }
 } catch (error) {
   console.error("[FILE_STORAGE] CRITICAL ERROR: Failed to initialize Supabase client:", error);

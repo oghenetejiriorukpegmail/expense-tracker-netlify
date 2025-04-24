@@ -61,18 +61,20 @@ import { SupabaseStorage } from './supabase-storage.js';
 
 // Export an async function to initialize the storage
 export async function initializeStorage(): Promise<IStorage> {
-  // Remove diagnostic logs
-  // console.log("[STORAGE] initializeStorage function called.");
-
+  console.log("[STORAGE] initializeStorage function called.");
+  console.log("[STORAGE] Module type:", typeof module !== 'undefined' ? 'CommonJS' : 'ESM');
+  console.log("[STORAGE] SupabaseStorage import:", typeof SupabaseStorage);
+  
   // Check if SupabaseStorage is properly imported
   if (!SupabaseStorage) {
     console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined in initializeStorage");
     throw new Error("SupabaseStorage class is undefined. Check import paths and circular dependencies.");
   }
 
-  // Remove diagnostic logs
-  // console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
-  // console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
+  // Add detailed diagnostic logs
+  console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
+  console.log("[STORAGE] SupabaseStorage properties:", Object.keys(SupabaseStorage));
+  console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
 
   // Ensure SupabaseStorage.initialize exists before calling it
   if (typeof SupabaseStorage.initialize !== 'function') {

@@ -43,15 +43,21 @@ export class SupabaseStorage implements IStorage {
   public sessionStore!: session.Store;
 
   private constructor() {
+    console.log("[SupabaseStorage] Constructor called");
+    console.log("[SupabaseStorage] Module type:", typeof module !== 'undefined' ? 'CommonJS' : 'ESM');
     this.client = postgres(databaseUrl!, { max: 1 });
     this.db = drizzle(this.client, { schema, logger: false });
+    console.log("[SupabaseStorage] Database client initialized");
     // Removed Supabase client initialization here
   }
 
   // Revert to static initialize method
   public static async initialize(): Promise<SupabaseStorage> {
-    console.log("[SupabaseStorage] Initializing storage...");
+    console.log("[SupabaseStorage] Static initialize method called");
+    console.log("[SupabaseStorage] Class definition exists:", typeof SupabaseStorage === 'function');
+    console.log("[SupabaseStorage] Class methods:", Object.getOwnPropertyNames(SupabaseStorage));
     const instance = new SupabaseStorage(); // Call private constructor
+    console.log("[SupabaseStorage] Instance created successfully");
     console.log("[SupabaseStorage] Testing database connection...");
     try {
       await instance.client`SELECT 1`; // Use instance client
