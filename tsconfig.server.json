@@ -12,6 +12,7 @@
     "noImplicitAny": false, // Disable strict type checking for any
     "strictNullChecks": false, // Disable strict null checks
     "strict": false, // Disable all strict type checking
+    "allowImportingTsExtensions": false, // Must be false when noEmit is false
     "jsx": "react-jsx", // Adjust if server uses JSX differently or not at all
     "types": ["node"], // Use Node types for server
     "baseUrl": ".", // Explicitly set baseUrl
