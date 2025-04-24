@@ -65,13 +65,45 @@ async function initializeApp() {
   }));
   console.log("Clerk middleware registered.");
 
-  // Await the storage initialization
-  const storage = await storagePromise;
-  console.log("Storage initialized successfully.");
+  // Await the storage initialization with better error handling
+  let storage;
+  try {
+    console.log("[SERVER] Awaiting storage initialization...");
+    storage = await storagePromise;
+    console.log("[SERVER] Storage initialized successfully.");
+  } catch (error) {
+    console.error("[SERVER] CRITICAL ERROR: Failed to initialize storage:", error);
+    // Add a fallback route to handle API requests when storage fails
+    app.use('/api/*', (req, res) => {
+      res.status(500).json({
+        message: "Server initialization error: Storage failed to initialize",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    });
+    
+    // Continue with app initialization but with limited functionality
+    console.warn("[SERVER] Continuing with limited functionality due to storage initialization failure");
+  }
 
   // Register routes, passing the initialized storage
-  await registerRoutes(app, storage); // Pass storage instance
-  console.log("Routes registered.");
+  if (storage) {
+    try {
+      console.log("[SERVER] Registering routes with initialized storage...");
+      await registerRoutes(app, storage); // Pass storage instance
+      console.log("[SERVER] Routes registered successfully.");
+    } catch (error) {
+      console.error("[SERVER] ERROR: Failed to register routes:", error);
+      // Add a fallback route to handle API requests when route registration fails
+      app.use('/api/*', (req, res) => {
+        res.status(500).json({
+          message: "Server initialization error: Route registration failed",
+          error: error instanceof Error ? error.message : "Unknown error"
+        });
+      });
+    }
+  } else {
+    console.error("[SERVER] ERROR: Cannot register routes - storage is undefined");
+  }
 
   // Centralized error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

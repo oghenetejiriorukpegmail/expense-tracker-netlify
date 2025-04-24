@@ -18,25 +18,60 @@ import { createExportRouter } from "./routes/export.routes";
 
 // --- Main Route Registration ---
 export async function registerRoutes(app: Express, storage: SupabaseStorage): Promise<Server> {
-  // Clerk middleware is applied in server/index.ts
+  console.log("[ROUTES] Starting route registration with storage instance...");
   
-  // Create our custom auth middleware
-  const authMiddleware = createAuthMiddleware(storage);
+  try {
+    // Verify storage is properly initialized
+    if (!storage) {
+      throw new Error("Storage instance is undefined or null");
+    }
+    
+    // Log storage instance details to verify it's properly initialized
+    console.log("[ROUTES] Storage instance received:", storage ? "Valid SupabaseStorage instance" : "UNDEFINED");
+    
+    // Clerk middleware is applied in server/index.ts
+    
+    // Create our custom auth middleware
+    console.log("[ROUTES] Creating auth middleware...");
+    const authMiddleware = createAuthMiddleware(storage);
+    console.log("[ROUTES] Auth middleware created successfully");
 
-  // Mount the new resource-specific routers with auth middleware
-  app.use('/api/profile', authMiddleware, createProfileRouter(storage));
-  app.use('/api/trips', authMiddleware, createTripRouter(storage));
-  app.use('/api/expenses', authMiddleware, createExpenseRouter(storage));
-  app.use('/api/mileage-logs', authMiddleware, createMileageLogRouter(storage));
-  app.use('/api/settings', authMiddleware, createSettingsRouter()); // Settings routes might not need storage
-  app.use('/api/background-tasks', authMiddleware, createBackgroundTaskRouter(storage));
-  app.use('/api/export', authMiddleware, createExportRouter(storage)); // Mount export routes under /api/export
+    // Mount the new resource-specific routers with auth middleware
+    console.log("[ROUTES] Mounting API routes...");
+    
+    // Use type assertion to work around TypeScript errors with middleware
+    app.use('/api/profile', authMiddleware as any, createProfileRouter(storage));
+    app.use('/api/trips', authMiddleware as any, createTripRouter(storage));
+    app.use('/api/expenses', authMiddleware as any, createExpenseRouter(storage));
+    app.use('/api/mileage-logs', authMiddleware as any, createMileageLogRouter(storage));
+    app.use('/api/settings', authMiddleware as any, createSettingsRouter()); // Settings routes might not need storage
+    app.use('/api/background-tasks', authMiddleware as any, createBackgroundTaskRouter(storage));
+    app.use('/api/export', authMiddleware as any, createExportRouter(storage)); // Mount export routes under /api/export
+    
+    console.log("[ROUTES] All API routes mounted successfully");
 
-  // Note: OCR routes were part of expenses/mileage logs and handled there or via background functions
+    // Note: OCR routes were part of expenses/mileage logs and handled there or via background functions
 
-  // Default error handler is now in server/index.ts
+    // Default error handler is now in server/index.ts
 
-  // Create server instance (might be redundant if serverless handler is used)
-  const httpServer = createServer(app);
-  return httpServer;
+    // Create server instance (might be redundant if serverless handler is used)
+    const httpServer = createServer(app);
+    console.log("[ROUTES] HTTP server created");
+    return httpServer;
+  } catch (error) {
+    console.error("[ROUTES] ERROR during route registration:", error);
+    // Still create and return a server even if there was an error
+    // This allows the application to start, but routes will return errors
+    const httpServer = createServer(app);
+    
+    // Add a fallback error route that will catch all API requests if routes failed to register
+    app.use('/api/*', (req, res) => {
+      res.status(500).json({
+        message: "Server initialization error. Please check server logs.",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    });
+    
+    return httpServer;
+  }
 }

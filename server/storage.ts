@@ -47,7 +47,27 @@ export interface IStorage {
 import { SupabaseStorage } from './supabase-storage';
 
 // Initialize and export the storage instance (as a promise)
-const storagePromise = SupabaseStorage.initialize();
+console.log("[STORAGE] Starting SupabaseStorage initialization...");
+const storagePromise = SupabaseStorage.initialize()
+  .then(storage => {
+    console.log("[STORAGE] SupabaseStorage initialization successful");
+    return storage;
+  })
+  .catch(error => {
+    console.error("[STORAGE] FATAL ERROR: SupabaseStorage initialization failed:", error);
+    // Re-throw the error to ensure the promise is rejected
+    throw error;
+  });
+
+// Add a helper function to safely access storage
+export async function getStorage() {
+  try {
+    return await storagePromise;
+  } catch (error) {
+    console.error("[STORAGE] Error accessing storage:", error);
+    throw new Error("Failed to initialize storage. Please check server logs.");
+  }
+}
 
 // Export the promise. Modules importing this will need to await it.
 export const storage = storagePromise;
