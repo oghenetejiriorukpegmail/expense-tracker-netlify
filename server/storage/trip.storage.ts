@@ -14,17 +14,35 @@ export async function getTripsByUserId(db: PostgresJsDatabase<typeof schema>, us
 }
 
 export async function createTrip(db: PostgresJsDatabase<typeof schema>, tripData: InsertTrip & { userId: number }): Promise<Trip> {
+   console.log("[TRIP_STORAGE] Creating trip with data:", tripData);
+   
    if (!tripData.name) {
+      console.error("[TRIP_STORAGE] Trip creation failed: Trip name is required");
       throw new Error("Trip name is required");
    }
+   
+   console.log("[TRIP_STORAGE] Database instance type:", typeof db);
+   console.log("[TRIP_STORAGE] Database has insert method:", typeof db.insert === 'function');
+   
    const dataToInsert = {
       description: '',
       ...tripData,
       createdAt: new Date(),
       updatedAt: new Date(),
    };
-  const result = await db.insert(schema.trips).values(dataToInsert).returning();
-  return result[0];
+   console.log("[TRIP_STORAGE] Prepared data to insert:", dataToInsert);
+   
+   try {
+     const result = await db.insert(schema.trips).values(dataToInsert).returning();
+     console.log("[TRIP_STORAGE] Trip created successfully:", result[0]);
+     return result[0];
+   } catch (error) {
+     console.error("[TRIP_STORAGE] Error inserting trip into database:", error);
+     if (error instanceof Error) {
+       console.error("[TRIP_STORAGE] Error stack:", error.stack);
+     }
+     throw error;
+   }
 }
 
 export async function updateTrip(db: PostgresJsDatabase<typeof schema>, id: number, tripData: Partial<InsertTrip>): Promise<Trip> {

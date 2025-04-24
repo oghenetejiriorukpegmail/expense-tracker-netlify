@@ -28,15 +28,30 @@ export function createTripRouter(storage: SupabaseStorage): express.Router {
   // POST /api/trips
   router.post("/", async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log("[TRIPS] POST /api/trips - Creating new trip");
+      
       // Cast the request to our authenticated request type
       const authReq = req as AuthenticatedRequest;
       const userProfile = authReq.user;
       const internalUserId = userProfile.id;
-
+      console.log("[TRIPS] User ID:", internalUserId);
+      
+      console.log("[TRIPS] Request body:", req.body);
       const validatedData = insertTripSchema.parse(req.body);
+      console.log("[TRIPS] Validated data:", validatedData);
+      
+      console.log("[TRIPS] Storage object type:", typeof storage);
+      console.log("[TRIPS] Storage has createTrip method:", typeof storage.createTrip === 'function');
+      
       const trip = await storage.createTrip({ ...validatedData, userId: internalUserId });
+      console.log("[TRIPS] Trip created successfully:", trip);
+      
       res.status(201).json(trip);
     } catch (error) {
+        console.error("[TRIPS] Error creating trip:", error);
+        if (error instanceof Error) {
+          console.error("[TRIPS] Error stack:", error.stack);
+        }
         if (error instanceof z.ZodError) return res.status(400).json({ message: "Validation failed", errors: error.errors });
         next(error);
     }

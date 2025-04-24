@@ -48,13 +48,18 @@ import { SupabaseStorage } from './supabase-storage';
 
 // Initialize and export the storage instance (as a promise)
 console.log("[STORAGE] Starting SupabaseStorage initialization...");
+console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
+console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
+
 const storagePromise = SupabaseStorage.initialize()
   .then(storage => {
     console.log("[STORAGE] SupabaseStorage initialization successful");
+    console.log("[STORAGE] Storage instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
     return storage;
   })
   .catch(error => {
     console.error("[STORAGE] FATAL ERROR: SupabaseStorage initialization failed:", error);
+    console.error("[STORAGE] Error stack:", error.stack);
     // Re-throw the error to ensure the promise is rejected
     throw error;
   });

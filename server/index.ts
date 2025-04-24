@@ -69,10 +69,22 @@ async function initializeApp() {
   let storage;
   try {
     console.log("[SERVER] Awaiting storage initialization...");
+    console.log("[SERVER] Storage promise type:", typeof storagePromise);
+    console.log("[SERVER] Storage promise is Promise:", storagePromise instanceof Promise);
+    
     storage = await storagePromise;
+    
     console.log("[SERVER] Storage initialized successfully.");
+    console.log("[SERVER] Storage type:", typeof storage);
+    console.log("[SERVER] Storage is null or undefined:", storage === null || storage === undefined);
+    if (storage) {
+      console.log("[SERVER] Storage methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
+    }
   } catch (error) {
     console.error("[SERVER] CRITICAL ERROR: Failed to initialize storage:", error);
+    if (error instanceof Error) {
+      console.error("[SERVER] Error stack:", error.stack);
+    }
     // Add a fallback route to handle API requests when storage fails
     app.use('/api/*', (req, res) => {
       res.status(500).json({

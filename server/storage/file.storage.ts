@@ -14,10 +14,29 @@ if (!supabaseServiceKey) {
   console.error("FATAL ERROR: SUPABASE_SERVICE_KEY environment variable is not set.");
   process.exit(1);
 }
-
 // Initialize Supabase client specifically for storage operations
-const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
-console.log(`Supabase client initialized for Storage operations: ${supabaseUrl}`);
+console.log("[FILE_STORAGE] Initializing Supabase client with URL:", supabaseUrl);
+console.log("[FILE_STORAGE] Service key provided:", !!supabaseServiceKey);
+
+let supabase: SupabaseClient;
+try {
+  supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+  console.log("[FILE_STORAGE] Supabase client initialized successfully");
+  console.log("[FILE_STORAGE] Supabase client has storage:", !!supabase.storage);
+  
+  // Test if storage is accessible
+  if (supabase.storage) {
+    console.log("[FILE_STORAGE] Storage buckets available:", typeof supabase.storage.from === 'function');
+  }
+} catch (error) {
+  console.error("[FILE_STORAGE] CRITICAL ERROR: Failed to initialize Supabase client:", error);
+  if (error instanceof Error) {
+    console.error("[FILE_STORAGE] Error stack:", error.stack);
+  }
+  // Re-throw to ensure the application knows there's a critical issue
+  throw error;
+}
+
 
 
 // File Storage methods extracted from SupabaseStorage
