@@ -26,34 +26,30 @@ const profileFormSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 
-// Schema for password change form validation
-const passwordFormSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(6, "New password must be at least 6 characters"),
-  confirmPassword: z.string().min(1, "Please confirm your new password"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "New passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type PasswordFormData = z.infer<typeof passwordFormSchema>;
+// Password changes are handled by Clerk UI/API
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const { getToken } = useAuth(); // Get getToken from Clerk
+  const { getToken, userId } = useAuth(); // Get getToken and userId from Clerk
 
-  // Fetch profile data
-  const { data: profile, isLoading, error } = useQuery<User>({
+  // Fetch profile data with retry and error handling
+  const { data: profile, isLoading, error, refetch } = useQuery<User>({
     queryKey: ["/api/profile"],
     queryFn: async () => {
-      const token = await getToken(); // Get Clerk token
-      if (!token) throw new Error("Not authenticated");
-      const headers = { Authorization: `Bearer ${token}` };
-      const res = await apiRequest("GET", "/api/profile", undefined, headers); // Pass headers
-      // Removed redundant !res.ok check as apiRequest handles it
-      return res.json();
+      try {
+        const token = await getToken(); // Get Clerk token
+        if (!token) throw new Error("Not authenticated");
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await apiRequest("GET", "/api/profile", undefined, headers); // Pass headers
+        return res.json();
+      } catch (err: any) {
+        console.error("Error fetching profile:", err);
+        throw new Error(err.message || "Failed to load profile data. Please try again.");
+      }
     },
     enabled: !!getToken, // Only run query if getToken is available
+    retry: 2, // Retry failed requests up to 2 times
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
   });
 
   // Setup form
@@ -79,21 +75,25 @@ export default function ProfilePage() {
   // Mutation for updating profile
   const mutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
-      const token = await getToken(); // Get Clerk token
-      if (!token) throw new Error("Not authenticated");
-      const headers = { Authorization: `Bearer ${token}` };
-      const res = await apiRequest("PUT", "/api/profile", data, headers); // Pass headers
-      // Removed redundant !res.ok check as apiRequest handles it
-      return res.json();
+      try {
+        const token = await getToken(); // Get Clerk token
+        if (!token) throw new Error("Not authenticated");
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await apiRequest("PUT", "/api/profile", data, headers); // Pass headers
+        return res.json();
+      } catch (err: any) {
+        console.error("Error updating profile:", err);
+        throw new Error(err.message || "Failed to update profile. Please try again.");
+      }
     },
     onSuccess: (updatedProfile) => {
       queryClient.setQueryData(["/api/profile"], updatedProfile);
       toast({ title: "Profile Updated", description: "Your profile has been saved." });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Update Failed",
-        description: error.message,
+        description: error.message || "An error occurred while updating your profile.",
         variant: "destructive",
       });
     },
@@ -103,42 +103,8 @@ export default function ProfilePage() {
     mutation.mutate(data);
   };
 
-  // --- Password Change Logic ---
-  const passwordForm = useForm<PasswordFormData>({
-    resolver: zodResolver(passwordFormSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
-
-  const passwordMutation = useMutation({
-    mutationFn: async (data: PasswordFormData) => {
-      const token = await getToken(); // Get Clerk token
-      if (!token) throw new Error("Not authenticated");
-      const headers = { Authorization: `Bearer ${token}` };
-      const { confirmPassword, ...payload } = data;
-      const res = await apiRequest("POST", "/api/profile/change-password", payload, headers); // Pass headers
-      // Removed redundant !res.ok check as apiRequest handles it
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({ title: "Password Updated", description: "Your password has been changed successfully." });
-      passwordForm.reset();
-    },
-    onError: (error) => {
-      toast({
-        title: "Password Change Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onPasswordSubmit = (data: PasswordFormData) => {
-    passwordMutation.mutate(data);
-  };
+  // Password changes are handled by Clerk UI/API through the UserButton component
+  // Users can click on the UserButton in the sidebar to access account settings
 
   return (
     <div className="flex flex-col md:flex-row h-screen">
@@ -159,7 +125,15 @@ export default function ProfilePage() {
             )}
             {error && (
               <div className="text-red-600 p-4 bg-red-50 rounded border border-red-200">
-                Error loading profile: {error.message}
+                <p className="mb-2">Error loading profile: {error.message}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => refetch()}
+                  className="mt-2"
+                >
+                  Try Again
+                </Button>
               </div>
             )}
             {!isLoading && !error && profile && (
@@ -250,65 +224,25 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Change Password Card */}
+        {/* Password Change Note Card */}
         <Card className="mt-6">
            <CardHeader>
             <CardTitle>Change Password</CardTitle>
             <CardDescription>Update your account password.</CardDescription>
           </CardHeader>
           <CardContent>
-             <Form {...passwordForm}>
-                <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
-                   <FormField
-                    control={passwordForm.control}
-                    name="currentPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Current Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Enter your current password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={passwordForm.control}
-                    name="newPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>New Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Enter new password (min. 6 characters)" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={passwordForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm New Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Confirm your new password" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <Button type="submit" disabled={passwordMutation.isPending}>
-                    {passwordMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating...
-                      </>
-                    ) : (
-                      "Change Password"
-                    )}
-                  </Button>
-                </form>
-              </Form>
+            <div className="text-center p-4">
+              <p className="mb-4">Password changes are managed through your Clerk account settings.</p>
+              <p className="mb-4">Click on your profile picture in the sidebar to access account settings, where you can change your password and manage other account details.</p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Button variant="outline" onClick={() => window.open(`https://accounts.clerk.dev/user/${userId}`, '_blank')}>
+                  Open Account Settings
+                </Button>
+                <Button variant="secondary" onClick={() => window.open(`https://accounts.clerk.dev/user/${userId}/security`, '_blank')}>
+                  Manage Security Settings
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
