@@ -1,6 +1,6 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
-import type { Expense, InsertExpense } from "@shared/schema";
+import type { Expense, InsertExpense } from "../../shared/schema.js";
 import { eq, and, desc } from 'drizzle-orm';
 
 // Expense methods extracted from SupabaseStorage

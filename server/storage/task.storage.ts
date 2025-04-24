@@ -1,6 +1,6 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
-import type { BackgroundTask, InsertBackgroundTask } from "@shared/schema";
+import type { BackgroundTask, InsertBackgroundTask } from "../../shared/schema.js";
 import { eq, desc } from 'drizzle-orm';
 
 // Background Task methods extracted from SupabaseStorage

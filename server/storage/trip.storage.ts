@@ -1,6 +1,6 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
-import type { Trip, InsertTrip } from "@shared/schema";
+import type { Trip, InsertTrip } from "../../shared/schema.js";
 import { eq, and, desc } from 'drizzle-orm';
 
 // Trip methods extracted from SupabaseStorage
