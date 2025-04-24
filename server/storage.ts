@@ -43,18 +43,24 @@ export interface IStorage {
 
 // MemStorage class removed as it's no longer used.
 
-// Import the new Supabase storage implementation
-import { SupabaseStorage } from './supabase-storage';
+// Remove static import
+// import { SupabaseStorage } from './supabase-storage';
 
 // Export an async function to initialize the storage
 export async function initializeStorage(): Promise<IStorage> {
   console.log("[STORAGE] initializeStorage function called.");
-  console.log("[STORAGE] SupabaseStorage before checks:", SupabaseStorage);
-  console.log("[STORAGE] SupabaseStorage.initialize before checks:", SupabaseStorage ? SupabaseStorage.initialize : 'SupabaseStorage is null/undefined');
+
+  // Dynamically import SupabaseStorage
+  console.log("[STORAGE] Dynamically importing SupabaseStorage...");
+  const { SupabaseStorage } = await import('./supabase-storage');
+  console.log("[STORAGE] Dynamic import complete.");
+
+  console.log("[STORAGE] SupabaseStorage after dynamic import:", SupabaseStorage);
+  console.log("[STORAGE] SupabaseStorage.initialize after dynamic import:", SupabaseStorage ? SupabaseStorage.initialize : 'SupabaseStorage is null/undefined');
 
   // Check if SupabaseStorage is properly imported
   if (!SupabaseStorage) {
-    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined in initializeStorage");
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined after dynamic import");
     throw new Error("SupabaseStorage class is undefined. Check import paths and circular dependencies.");
   }
 
@@ -63,7 +69,7 @@ export async function initializeStorage(): Promise<IStorage> {
 
   // Ensure SupabaseStorage.initialize exists before calling it
   if (typeof SupabaseStorage.initialize !== 'function') {
-    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function in initializeStorage");
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function after dynamic import");
     throw new Error("SupabaseStorage.initialize is not a function. Check class implementation.");
   }
 
