@@ -1,6 +1,6 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
-import type { MileageLog, InsertMileageLog } from "@shared/schema";
+import type { MileageLog, InsertMileageLog } from "../../shared/schema.js";
 import { eq, and, desc, gte, lte, asc } from 'drizzle-orm';
 
 // Mileage Log methods extracted from SupabaseStorage
@@ -27,19 +27,24 @@ export async function getMileageLogsByUserId(db: PostgresJsDatabase<typeof schem
   const sortOrderFunc = options?.sortOrder === 'asc' ? asc : desc;
   const sortColumn = schema.mileageLogs[sortBy as keyof typeof schema.mileageLogs.$inferSelect] ?? schema.mileageLogs.tripDate;
 
-  // Build the query dynamically
-  let queryBuilder = db.select().from(schema.mileageLogs).where(and(...conditions));
-
-  // Apply limit and offset before orderBy
-  if (options?.limit !== undefined) {
-      queryBuilder = queryBuilder.limit(options.limit);
-  }
-  if (options?.offset !== undefined) {
-      queryBuilder = queryBuilder.offset(options.offset);
-  }
-
-  // Apply orderBy and execute
-  const finalQuery = queryBuilder.orderBy(sortOrderFunc(sortColumn));
+  // Build the query with all conditions at once
+  const query = db.select()
+    .from(schema.mileageLogs)
+    .where(and(...conditions))
+    .orderBy(sortOrderFunc(sortColumn));
+  
+  // Apply limit and offset if provided
+  const limitValue = options?.limit;
+  const offsetValue = options?.offset;
+  
+  // Create the final query with limit and offset
+  const finalQuery = limitValue !== undefined
+    ? (offsetValue !== undefined
+        ? query.limit(limitValue).offset(offsetValue)
+        : query.limit(limitValue))
+    : (offsetValue !== undefined
+        ? query.offset(offsetValue)
+        : query);
 
   return await finalQuery;
 }

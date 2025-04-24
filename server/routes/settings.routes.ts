@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { testOCR } from "../util/ocr.js"; // Import OCR types and test function
-import { updateOcrApiKey, setDefaultOcrMethod, saveConfig, loadConfig } from "../config.js";
-import type { User, PublicUser } from "@shared/schema"; // Import PublicUser
+import { testOCR } from "../util/ocr.js"; // Add .js extension
+import { updateOcrApiKey, setDefaultOcrMethod, saveConfig, loadConfig } from "../config.js"; // Add .js extension
+import type { User, PublicUser } from "../../shared/schema.js"; // Use relative path with .js extension
 
 // Define request type with user property
 interface AuthenticatedRequest extends Request {

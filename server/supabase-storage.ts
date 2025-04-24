@@ -1,7 +1,7 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from '../shared/schema.js.js';
-import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "@shared/schema";
+import * as schema from '../shared/schema.js';
+import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema.js";
 import session from "express-session";
 import connectPgSimple from 'connect-pg-simple';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';

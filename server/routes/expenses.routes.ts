@@ -1,12 +1,12 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import * as schema from '../../shared/schema.js.js'; // Import schema
-import { insertExpenseSchema } from "@shared/schema";
-import { upload } from "../middleware/multer-config.js"; // Assuming multer config is still needed
-import type { IStorage } from "../storage.js"; // Import the interface type
-import type { User, InsertExpense, PublicUser } from "@shared/schema"; // Import InsertExpense
+import * as schema from '../../shared/schema.js'; // Use relative path with .js extension
+import { insertExpenseSchema } from '../../shared/schema.js';
+import { upload } from "../middleware/multer-config.js"; // Add .js extension
+import type { IStorage } from "../storage.js"; // Add .js extension
+import type { User, InsertExpense, PublicUser } from '../../shared/schema.js'; // Use relative path with .js extension
 import { v4 as uuidv4 } from "uuid"; // Import uuid
-import { loadConfig } from "../config.js"; // Import config loading
+import { loadConfig } from "../config.js"; // Add .js extension
 
 // Define request type with user property and Multer
 interface AuthenticatedMulterRequest extends Request {

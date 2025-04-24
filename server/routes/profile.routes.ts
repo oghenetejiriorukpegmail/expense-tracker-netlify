@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import type { IStorage } from "../storage.js"; // Import the interface type
-import type { User, PublicUser } from "@shared/schema";
+import type { IStorage } from "../storage.js"; // Add .js extension
+import type { User, PublicUser } from "../../shared/schema.js"; // Use relative path with .js extension
 
 // Define request type with user property
 interface AuthenticatedRequest extends Request {

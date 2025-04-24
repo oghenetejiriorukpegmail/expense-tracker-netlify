@@ -1,6 +1,6 @@
-import { users, trips, expenses } from "@shared/schema";
-import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "@shared/schema"; // Added PublicUser, BackgroundTask, InsertBackgroundTask
-import * as schema from '../shared/schema.js.js'; // Import schema for enum
+import { users, trips, expenses } from "../shared/schema.js";
+import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema.js"; // Added PublicUser, BackgroundTask, InsertBackgroundTask
+import * as schema from '../shared/schema.js'; // Import schema for enum
 import session from "express-session";
 
 // Define the storage interface
