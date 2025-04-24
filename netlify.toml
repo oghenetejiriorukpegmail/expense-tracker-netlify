@@ -1,6 +1,6 @@
 [build]
-  # Command to build the client and potentially the server functions
-  # Assuming the client build output is 'dist' and server is handled separately or by this script
+  # Command to build server JS first, then client assets
+  command = "npm run build:server && npm run build"
   # Directory containing the built client-side assets
   publish = "client/dist"
   # Directory where Netlify will find the serverless functions

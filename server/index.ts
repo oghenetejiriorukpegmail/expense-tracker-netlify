@@ -5,7 +5,7 @@ import serverless from 'serverless-http'; // Import serverless-http
 import { clerkMiddleware } from '@clerk/express'; // Import Clerk middleware
 import { registerRoutes } from "./routes";
 // import { setupVite, serveStatic, log } from "./vite"; // Vite/Static serving not needed for serverless
-import { storage as storagePromise } from "./storage"; // Import the exported promise
+import { initializeStorage } from "./storage"; // Import the initialization function
 import { initializeEnvFromConfig } from "./config"; // Import config initialization
 
 // Initialize environment variables from config file first
@@ -70,14 +70,15 @@ async function initializeApp() {
   try {
     console.log("[SERVER] Awaiting storage initialization...");
     
-    storage = await storagePromise; // Await the imported promise
+    storage = await initializeStorage(); // Call the initialization function
     
     console.log("[SERVER] Storage initialized successfully.");
-    console.log("[SERVER] Storage type:", typeof storage);
-    console.log("[SERVER] Storage is null or undefined:", storage === null || storage === undefined);
-    if (storage) {
-      console.log("[SERVER] Storage methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
-    }
+    // Remove diagnostic logs
+    // console.log("[SERVER] Storage type:", typeof storage);
+    // console.log("[SERVER] Storage is null or undefined:", storage === null || storage === undefined);
+    // if (storage) {
+    //   console.log("[SERVER] Storage methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
+    // }
   } catch (error) {
     console.error("[SERVER] CRITICAL ERROR: Failed to initialize storage:", error);
     if (error instanceof Error) {

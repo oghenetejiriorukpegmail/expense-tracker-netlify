@@ -48,30 +48,29 @@ export class SupabaseStorage implements IStorage {
     // Removed Supabase client initialization here
   }
 
-  // Make initialize an instance method (and private)
-  private async initializeInstance(): Promise<void> {
-    console.log("[SupabaseStorage] Initializing instance...");
+  // Revert to static initialize method
+  public static async initialize(): Promise<SupabaseStorage> {
+    console.log("[SupabaseStorage] Initializing storage...");
+    const instance = new SupabaseStorage(); // Call private constructor
     console.log("[SupabaseStorage] Testing database connection...");
     try {
-      await this.client`SELECT 1`;
+      await instance.client`SELECT 1`; // Use instance client
       console.log("[SupabaseStorage] Successfully connected to Supabase database.");
     } catch (error) {
       console.error("[SupabaseStorage] FATAL ERROR: Failed to connect to Supabase database during startup.");
       console.error("[SupabaseStorage] Error details:", error);
-      throw error; // Re-throw to be caught by createAndInitialize
+      throw error; // Re-throw
     }
 
     const PgStore = connectPgSimple(session);
-    this.sessionStore = new PgStore({
+    instance.sessionStore = new PgStore({ // Set session store on instance
         conString: databaseUrl,
         createTableIfMissing: false,
     });
     console.log("[SupabaseStorage] PostgreSQL session store initialized.");
-    console.log("[SupabaseStorage] Instance initialized successfully.");
+    console.log("[SupabaseStorage] Storage initialized successfully.");
+    return instance; // Return the initialized instance
   }
-
-  // Remove static factory method
-  // public static async createAndInitialize(): Promise<SupabaseStorage> { ... }
 
   // --- User methods ---
   async getUserById(id: number): Promise<User | undefined> {
@@ -188,20 +187,4 @@ export class SupabaseStorage implements IStorage {
 }
 
 // --- Initialize and Export Instance Promise ---
-console.log("[SupabaseStorage] Starting self-initialization...");
-
-export const storageInstancePromise: Promise<IStorage> = (async () => {
-  console.log("[SupabaseStorage] IIAFE started.");
-  const instance = new (SupabaseStorage as any)(); // Use 'any' to bypass private constructor check
-  try {
-    await instance.initializeInstance();
-    console.log("[SupabaseStorage] IIAFE initialization successful.");
-    return instance;
-  } catch (error) {
-    console.error("[SupabaseStorage] FATAL ERROR during IIAFE initialization:", error);
-    // Propagate the error by throwing it, so the promise rejects
-    throw new Error(`Failed to initialize SupabaseStorage: ${error instanceof Error ? error.message : String(error)}`);
-  }
-})();
-
-console.log("[SupabaseStorage] storageInstancePromise created.");
+// Remove IIAFE

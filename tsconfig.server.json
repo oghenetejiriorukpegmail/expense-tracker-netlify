@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json", // Inherit base settings
+  "compilerOptions": {
+    "noEmit": false, // Allow emitting JS files
+    "outDir": "./dist-server", // Specify output directory for server JS files
+    "module": "ESNext", // Ensure ES Module output
+    "moduleResolution": "NodeNext", // Or "Bundler", ensure consistency
+    // Remove frontend-specific options if necessary (like "jsx": "preserve", "types": ["vite/client"])
+    // Keep "baseUrl" and "paths" if needed for server-side imports
+    "jsx": "react-jsx", // Adjust if server uses JSX differently or not at all
+    "types": ["node"] // Use Node types for server
+  },
+  "include": ["server/**/*", "shared/**/*"], // Only include server and shared code
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts", "client/**/*"] // Exclude client code
+}

@@ -1,5 +1,6 @@
 import { users, trips, expenses } from "@shared/schema";
 import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "@shared/schema"; // Added PublicUser, BackgroundTask, InsertBackgroundTask
+import * as schema from '@shared/schema'; // Import schema for enum
 import session from "express-session";
 
 // Define the storage interface
@@ -55,15 +56,43 @@ export interface IStorage {
 
 // MemStorage class removed as it's no longer used.
 
-// Remove static import of SupabaseStorage
-// import { SupabaseStorage } from './supabase-storage';
+// Use static import again
+import { SupabaseStorage } from './supabase-storage';
 
-// Remove the initializeStorage function
-// export async function initializeStorage(): Promise<IStorage> { ... }
+// Export an async function to initialize the storage
+export async function initializeStorage(): Promise<IStorage> {
+  // Remove diagnostic logs
+  // console.log("[STORAGE] initializeStorage function called.");
 
-// Import and re-export the promise directly from supabase-storage
-import { storageInstancePromise } from './supabase-storage';
+  // Check if SupabaseStorage is properly imported
+  if (!SupabaseStorage) {
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined in initializeStorage");
+    throw new Error("SupabaseStorage class is undefined. Check import paths and circular dependencies.");
+  }
 
-console.log("[STORAGE] Re-exporting storageInstancePromise...");
+  // Remove diagnostic logs
+  // console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
+  // console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
 
-export const storage = storageInstancePromise;
+  // Ensure SupabaseStorage.initialize exists before calling it
+  if (typeof SupabaseStorage.initialize !== 'function') {
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function");
+    throw new Error("SupabaseStorage.initialize is not a function. Check class implementation.");
+  }
+
+  try {
+    // Call the static initialize method
+    // console.log("[STORAGE] Calling SupabaseStorage.initialize()..."); // Remove diagnostic log
+    const storageInstance = await SupabaseStorage.initialize();
+    // console.log("[STORAGE] SupabaseStorage initialization successful"); // Remove diagnostic log
+    // console.log("[STORAGE] Storage instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storageInstance))); // Optional: Keep if needed
+    return storageInstance;
+  } catch (error: any) {
+    console.error("[STORAGE] FATAL ERROR: SupabaseStorage initialization failed in initializeStorage:", error);
+    console.error("[STORAGE] Error stack:", error.stack);
+    throw error; // Re-throw the error
+  }
+}
+
+// Remove direct export
+// export const storage = storageInstancePromise;
