@@ -1,7 +1,20 @@
-import { users, trips, expenses } from "../shared/schema";
-import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema"; // Added PublicUser, BackgroundTask, InsertBackgroundTask
-import * as schema from '../shared/schema'; // Import schema for enum
-import session from "express-session";
+// Use CommonJS require for compatibility with Netlify functions
+const { users, trips, expenses } = require("../shared/schema");
+const schema = require('../shared/schema'); // Import schema for enum
+const session = require("express-session");
+
+// Type definitions for TypeScript
+type User = any;
+type PublicUser = any;
+type InsertUser = any;
+type Trip = any;
+type InsertTrip = any;
+type Expense = any;
+type InsertExpense = any;
+type MileageLog = any;
+type InsertMileageLog = any;
+type BackgroundTask = any;
+type InsertBackgroundTask = any;
 
 // Define the storage interface
 export interface IStorage {
@@ -56,11 +69,11 @@ export interface IStorage {
 
 // MemStorage class removed as it's no longer used.
 
-// Use static import again
-import { SupabaseStorage } from './supabase-storage';
+// Use require for compatibility with Netlify functions
+const { SupabaseStorage } = require('./supabase-storage');
 
 // Export an async function to initialize the storage
-export async function initializeStorage(): Promise<IStorage> {
+async function initializeStorage() {
   console.log("[STORAGE] initializeStorage function called.");
   console.log("[STORAGE] Module type:", typeof module !== 'undefined' ? 'CommonJS' : 'ESM');
   console.log("[STORAGE] SupabaseStorage import:", typeof SupabaseStorage);
@@ -96,5 +109,8 @@ export async function initializeStorage(): Promise<IStorage> {
   }
 }
 
-// Remove direct export
-// export const storage = storageInstancePromise;
+// Export for CommonJS compatibility
+module.exports = {
+  initializeStorage,
+  IStorage: null // This is just for TypeScript interface, not used at runtime
+};

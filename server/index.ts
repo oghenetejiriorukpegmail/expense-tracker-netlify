@@ -1,12 +1,17 @@
-import 'dotenv/config'; // Load environment variables FIRST
-import express, { type Request, Response, NextFunction } from "express";
-import helmet from "helmet"; // Import helmet
-import serverless from 'serverless-http'; // Import serverless-http
-import { clerkMiddleware } from '@clerk/express'; // Import Clerk middleware
-import { registerRoutes } from "./routes";
-// import { setupVite, serveStatic, log } from "./vite"; // Vite/Static serving not needed for serverless
-import { initializeStorage } from "./storage"; // Import the initialization function
-import { initializeEnvFromConfig } from "./config"; // Import config initialization
+// Load environment variables FIRST
+require('dotenv/config');
+
+// Use CommonJS require for compatibility with Netlify functions
+const express = require("express");
+const helmet = require("helmet");
+const serverless = require('serverless-http');
+const { clerkMiddleware } = require('@clerk/express');
+const { registerRoutes } = require("./routes");
+const { initializeStorage } = require("./storage");
+const { initializeEnvFromConfig } = require("./config");
+
+// Import types for TypeScript
+const { Request, Response, NextFunction } = require('express');
 
 // Initialize environment variables from config file first
 initializeEnvFromConfig();
@@ -23,13 +28,13 @@ async function initializeApp() {
   app.use(express.urlencoded({ extended: false }));
 
   // Logging middleware (simplified for serverless)
-  app.use((req, res, next) => {
+  app.use((req: any, res: any, next: any) => {
     const start = Date.now();
     const path = req.path;
     let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
     const originalResJson = res.json;
-    res.json = function (bodyJson, ...args) {
+    res.json = function (bodyJson: any, ...args: any[]) {
       capturedJsonResponse = bodyJson;
       return originalResJson.apply(res, [bodyJson, ...args]);
     };
@@ -86,7 +91,7 @@ async function initializeApp() {
       console.error("[SERVER] Error stack:", error.stack);
     }
     // Add a fallback route to handle API requests when storage fails
-    app.use('/api/*', (req, res) => {
+    app.use('/api/*', (req: any, res: any) => {
       res.status(500).json({
         message: "Server initialization error: Storage failed to initialize",
         error: error instanceof Error ? error.message : "Unknown error"
@@ -106,7 +111,7 @@ async function initializeApp() {
     } catch (error) {
       console.error("[SERVER] ERROR: Failed to register routes:", error);
       // Add a fallback route to handle API requests when route registration fails
-      app.use('/api/*', (req, res) => {
+      app.use('/api/*', (req: any, res: any) => {
         res.status(500).json({
           message: "Server initialization error: Route registration failed",
           error: error instanceof Error ? error.message : "Unknown error"
@@ -118,7 +123,7 @@ async function initializeApp() {
   }
 
   // Centralized error handler
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: any, _req: any, res: any, _next: any) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 

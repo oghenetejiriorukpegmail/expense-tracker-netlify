@@ -1,21 +1,35 @@
-import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from '../shared/schema';
-import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema";
-import session from "express-session";
-import connectPgSimple from 'connect-pg-simple';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+// Use CommonJS require for compatibility with Netlify functions
+const { drizzle } = require('drizzle-orm/postgres-js');
+const postgres = require('postgres');
+const schema = require('../shared/schema');
+const session = require("express-session");
+const connectPgSimple = require('connect-pg-simple');
+const { createClient } = require('@supabase/supabase-js');
 
 // Import the interface only, not the entire module to avoid circular dependencies
-import type { IStorage } from './storage';
+const { IStorage } = require('./storage');
 
 // Import storage functions from separate files
-import * as userStorage from './storage/user.storage';
-import * as tripStorage from './storage/trip.storage';
-import * as expenseStorage from './storage/expense.storage';
-import * as mileageStorage from './storage/mileage.storage';
-import * as taskStorage from './storage/task.storage';
-import * as fileStorage from './storage/file.storage';
+const userStorage = require('./storage/user.storage');
+const tripStorage = require('./storage/trip.storage');
+const expenseStorage = require('./storage/expense.storage');
+const mileageStorage = require('./storage/mileage.storage');
+const taskStorage = require('./storage/task.storage');
+const fileStorage = require('./storage/file.storage');
+
+// Type definitions for TypeScript
+type PostgresJsDatabase = any;
+type User = any;
+type PublicUser = any;
+type InsertUser = any;
+type Trip = any;
+type InsertTrip = any;
+type Expense = any;
+type InsertExpense = any;
+type MileageLog = any;
+type InsertMileageLog = any;
+type BackgroundTask = any;
+type InsertBackgroundTask = any;
 
 // Get Supabase connection string and storage details from environment variables
 const databaseUrl = process.env.DATABASE_URL;
