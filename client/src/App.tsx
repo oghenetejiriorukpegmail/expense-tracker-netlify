@@ -1,4 +1,4 @@
-import { useEffect } from "react"; // Import useEffect
+import { useEffect, lazy, Suspense } from "react"; // Import useEffect, lazy, and Suspense
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -6,45 +6,58 @@ import { Toaster } from "@/components/ui/toaster";
 import { supabase } from "./lib/supabaseClient"; // Import supabase client
 import { RealtimeChannel, RealtimePostgresChangesPayload, REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
 import { useToast } from "./hooks/use-toast"; // Import useToast
-import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "@/lib/protected-route";
-import AuthPage from "@/pages/auth-page";
-import VerifyEmailPage from "@/pages/verify-email-page"; // Import VerifyEmailPage
-import AuthCallbackHandler from "@/pages/auth-callback-handler"; // Import AuthCallbackHandler
-import DashboardPage from "@/pages/dashboard-page";
-import TripsPage from "@/pages/trips-page";
-import ExpensesPage from "@/pages/expenses-page";
-import SettingsPage from "@/pages/settings-page";
-import ProfilePage from "@/pages/profile-page"; // Import ProfilePage
-import MileageLogsPage from "@/pages/mileage-logs-page"; // Import MileageLogsPage
-import EditTripModal from "@/components/modals/edit-trip-modal"; // Import EditTripModal
-import EditExpenseModal from "@/components/modals/edit-expense-modal"; // Import EditExpenseModal
-import BatchUploadModal from "@/components/modals/batch-upload-modal"; // Import BatchUploadModal
-import AddEditMileageLogModal from "@/components/modals/add-edit-mileage-log-modal"; // Import Mileage Log Modal
 import { useModalStore } from "./lib/store"; // Import modal store
 import type { BackgroundTask } from "../../shared/schema"; // Corrected relative path
 import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react"; // Import Clerk callback component
 
+// Dynamically import page components
+const NotFound = lazy(() => import("@/pages/not-found"));
+const AuthPage = lazy(() => import("@/pages/auth-page"));
+const VerifyEmailPage = lazy(() => import("@/pages/verify-email-page"));
+const AuthCallbackHandler = lazy(() => import("@/pages/auth-callback-handler"));
+const DashboardPage = lazy(() => import("@/pages/dashboard-page"));
+const TripsPage = lazy(() => import("@/pages/trips-page"));
+const ExpensesPage = lazy(() => import("@/pages/expenses-page"));
+const SettingsPage = lazy(() => import("@/pages/settings-page"));
+const ProfilePage = lazy(() => import("@/pages/profile-page"));
+const MileageLogsPage = lazy(() => import("@/pages/mileage-logs-page"));
+
+// Dynamically import modal components
+const EditTripModal = lazy(() => import("@/components/modals/edit-trip-modal"));
+const EditExpenseModal = lazy(() => import("@/components/modals/edit-expense-modal"));
+const BatchUploadModal = lazy(() => import("@/components/modals/batch-upload-modal"));
+const AddEditMileageLogModal = lazy(() => import("@/components/modals/add-edit-mileage-log-modal"));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  </div>
+);
+
 function Router() {
   return (
-    <Switch>
-      <ProtectedRoute path="/" component={DashboardPage} />
-      <ProtectedRoute path="/trips" component={TripsPage} />
-      <ProtectedRoute path="/expenses" component={ExpensesPage} />
-      <ProtectedRoute path="/settings" component={SettingsPage} />
-      <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Add Profile route */}
-      <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
-      {/* Handle all Clerk authentication paths using the callback handler */}
-      <Route path="/auth/sign-in/:rest*" component={AuthCallbackHandler} />
-      <Route path="/auth/sign-up/:rest*" component={AuthCallbackHandler} />
-      <Route path="/auth/sso-callback" component={AuthCallbackHandler} />
-      <Route path="/auth/:rest*" component={AuthCallbackHandler} />
-      {/* Explicit route for the base auth pages */}
-      <Route path="/auth" component={AuthPage} />
-      <Route path="/auth/sign-in" component={AuthPage} />
-      <Route path="/auth/sign-up" component={AuthPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<LoadingFallback />}>
+      <Switch>
+        <ProtectedRoute path="/" component={DashboardPage} />
+        <ProtectedRoute path="/trips" component={TripsPage} />
+        <ProtectedRoute path="/expenses" component={ExpensesPage} />
+        <ProtectedRoute path="/settings" component={SettingsPage} />
+        <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Add Profile route */}
+        <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
+        {/* Handle all Clerk authentication paths using the callback handler */}
+        <Route path="/auth/sign-in/:rest*" component={AuthCallbackHandler} />
+        <Route path="/auth/sign-up/:rest*" component={AuthCallbackHandler} />
+        <Route path="/auth/sso-callback" component={AuthCallbackHandler} />
+        <Route path="/auth/:rest*" component={AuthCallbackHandler} />
+        {/* Explicit route for the base auth pages */}
+        <Route path="/auth" component={AuthPage} />
+        <Route path="/auth/sign-in" component={AuthPage} />
+        <Route path="/auth/sign-up" component={AuthPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
@@ -157,17 +170,20 @@ function App() {
       {/* Removed AuthProvider wrapper */}
       <Router />
       <Toaster />
-      {/* Add EditTripModal alongside other modals */}
-      <EditTripModal />
-      <EditExpenseModal />
-      <BatchUploadModal /> {/* Render BatchUploadModal */}
-      {/* Render Mileage Log Modal conditionally */}
-      <AddEditMileageLogModal
-        isOpen={addEditMileageLogOpen}
-        onClose={() => toggleAddEditMileageLog()} // Close modal using toggle function
-        mileageLog={editingMileageLog}
-        tripId={mileageLogTripId}
-      />
+      {/* Wrap modals in Suspense */}
+      <Suspense fallback={null}>
+        {/* Add EditTripModal alongside other modals */}
+        <EditTripModal />
+        <EditExpenseModal />
+        <BatchUploadModal /> {/* Render BatchUploadModal */}
+        {/* Render Mileage Log Modal conditionally */}
+        <AddEditMileageLogModal
+          isOpen={addEditMileageLogOpen}
+          onClose={() => toggleAddEditMileageLog()} // Close modal using toggle function
+          mileageLog={editingMileageLog}
+          tripId={mileageLogTripId}
+        />
+      </Suspense>
     </QueryClientProvider>
   );
 }

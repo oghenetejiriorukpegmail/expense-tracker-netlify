@@ -6,8 +6,9 @@ import type { Trip, Expense, User } from "@shared/schema"; // Import types inclu
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import SummaryCard from "@/components/cards/summary-card";
-import ExpenseChart from "@/components/charts/expense-chart";
-import ExpenseTrendChart from "@/components/charts/expense-trend-chart";
+// Import dynamic chart components instead of direct imports
+import DynamicExpenseChart from "@/components/charts/dynamic-expense-chart";
+import DynamicExpenseTrendChart from "@/components/charts/dynamic-expense-trend-chart";
 import TripCard from "@/components/cards/trip-card";
 import AddExpenseModal from "@/components/modals/add-expense-modal";
 import AddTripModal from "@/components/modals/add-trip-modal";
@@ -137,11 +138,11 @@ export default function DashboardPage() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="col-span-1">
-            <ExpenseChart expenseData={expensesByCategory} isLoading={isLoading} />
+            <DynamicExpenseChart expenseData={expensesByCategory} isLoading={isLoading} />
           </div>
 
           <div className="col-span-2">
-            <ExpenseTrendChart trendData={trendData} isLoading={isLoading} />
+            <DynamicExpenseTrendChart trendData={trendData} isLoading={isLoading} />
           </div>
         </div>
 

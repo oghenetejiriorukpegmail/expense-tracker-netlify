@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import MileageLogTable from '@/components/mileage-log-table';
+import DynamicMileageLogTable from '@/components/dynamic-mileage-log-table';
 import type { MileageLog } from '@shared/schema';
 import AnimatedPage from '@/components/animated-page'; // Import AnimatedPage
 
@@ -29,7 +29,7 @@ export default function MileageLogsPage() {
           </div>
         )}
 
-        <MileageLogTable logs={logs || []} isLoading={isLoading} />
+        <DynamicMileageLogTable logs={logs || []} isLoading={isLoading} />
       </div>
     </AnimatedPage>
   );
