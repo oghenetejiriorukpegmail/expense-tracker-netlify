@@ -44,20 +44,33 @@ export interface IStorage {
 // MemStorage class removed as it's no longer used.
 
 // Import the new Supabase storage implementation
-import { SupabaseStorage } from './supabase-storage';
+import SupabaseStorage from './supabase-storage';
 
 // Initialize and export the storage instance (as a promise)
 console.log("[STORAGE] Starting SupabaseStorage initialization...");
+
+// Check if SupabaseStorage is properly imported
+if (!SupabaseStorage) {
+  console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined");
+  throw new Error("SupabaseStorage class is undefined. Check import paths and circular dependencies.");
+}
+
 console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
 console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
 
+// Ensure SupabaseStorage.initialize exists before calling it
+if (typeof SupabaseStorage.initialize !== 'function') {
+  console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function");
+  throw new Error("SupabaseStorage.initialize is not a function. Check class implementation.");
+}
+
 const storagePromise = SupabaseStorage.initialize()
-  .then(storage => {
+  .then((storage: any) => {
     console.log("[STORAGE] SupabaseStorage initialization successful");
     console.log("[STORAGE] Storage instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storage)));
     return storage;
   })
-  .catch(error => {
+  .catch((error: Error) => {
     console.error("[STORAGE] FATAL ERROR: SupabaseStorage initialization failed:", error);
     console.error("[STORAGE] Error stack:", error.stack);
     // Re-throw the error to ensure the promise is rejected

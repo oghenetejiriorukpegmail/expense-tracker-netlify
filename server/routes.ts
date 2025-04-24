@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
-import type { SupabaseStorage } from "./supabase-storage"; // Use specific type
+import type SupabaseStorage from "./supabase-storage"; // Use specific type
 import { createAuthMiddleware } from "./middleware/auth-middleware"; // Import our custom auth middleware
 
 // Import the new router creation functions

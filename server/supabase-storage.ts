@@ -6,7 +6,8 @@ import session from "express-session";
 import connectPgSimple from 'connect-pg-simple';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-import { IStorage } from './storage';
+// Import the interface only, not the entire module to avoid circular dependencies
+import type { IStorage } from './storage';
 
 // Import storage functions from separate files
 import * as userStorage from './storage/user.storage';
@@ -35,7 +36,8 @@ if (!supabaseServiceKey) {
   process.exit(1);
 }
 
-export class SupabaseStorage implements IStorage {
+// Export as default and named export to maintain backward compatibility
+export default class SupabaseStorage implements IStorage {
   private db: PostgresJsDatabase<typeof schema>;
   private client: postgres.Sql;
   // Removed supabase client instance as it's initialized in file.storage.ts
@@ -161,6 +163,9 @@ export class SupabaseStorage implements IStorage {
   async getBackgroundTaskById(id: number): Promise<BackgroundTask | undefined> {
     return taskStorage.getBackgroundTaskById(this.db, id);
   }
+  
+  // Add named export for backward compatibility
+  export { SupabaseStorage };
   async getBackgroundTasksByUserId(userId: number): Promise<BackgroundTask[]> {
     return taskStorage.getBackgroundTasksByUserId(this.db, userId);
   }
