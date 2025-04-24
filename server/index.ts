@@ -69,11 +69,13 @@ async function initializeApp() {
   let storage;
   try {
     console.log("[SERVER] Awaiting storage initialization...");
+console.log("[SERVER] Before awaiting storagePromise - Type:", typeof storagePromise, "Value:", storagePromise);
     console.log("[SERVER] Storage promise type:", typeof storagePromise);
     console.log("[SERVER] Storage promise is Promise:", storagePromise instanceof Promise);
     
     storage = await storagePromise;
     
+console.log("[SERVER] After awaiting storagePromise - Type:", typeof storage, "Value:", storage);
     console.log("[SERVER] Storage initialized successfully.");
     console.log("[SERVER] Storage type:", typeof storage);
     console.log("[SERVER] Storage is null or undefined:", storage === null || storage === undefined);

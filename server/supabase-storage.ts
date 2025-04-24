@@ -163,13 +163,13 @@ export class SupabaseStorage implements IStorage {
     return taskStorage.getBackgroundTaskById(this.db, id);
   }
   
-  // Add named export for backward compatibility
-  export { SupabaseStorage };
   async getBackgroundTasksByUserId(userId: number): Promise<BackgroundTask[]> {
     return taskStorage.getBackgroundTasksByUserId(this.db, userId);
   }
 
   // --- File Storage methods (delegated) ---
+  // Add named export for backward compatibility
+  // export { SupabaseStorage }; // Moved outside class
   async uploadFile(filePath: string, fileBuffer: Buffer, contentType: string, bucketName?: string): Promise<{ path: string }> {
     return fileStorage.uploadFile(filePath, fileBuffer, contentType, bucketName);
   }

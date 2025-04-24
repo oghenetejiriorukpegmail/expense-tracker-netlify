@@ -48,6 +48,9 @@ import { SupabaseStorage } from './supabase-storage';
 
 // Initialize and export the storage instance (as a promise)
 console.log("[STORAGE] Starting SupabaseStorage initialization...");
+console.log("[STORAGE] SupabaseStorage before checks:", SupabaseStorage);
+console.log("[STORAGE] SupabaseStorage.initialize before checks:", SupabaseStorage ? SupabaseStorage.initialize : 'SupabaseStorage is null/undefined');
+console.log("[STORAGE] Starting SupabaseStorage initialization...");
 
 // Check if SupabaseStorage is properly imported
 if (!SupabaseStorage) {
