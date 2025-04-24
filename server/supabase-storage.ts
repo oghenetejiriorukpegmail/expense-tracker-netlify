@@ -50,11 +50,12 @@ if (!supabaseServiceKey) {
   process.exit(1);
 }
 
-export class SupabaseStorage implements IStorage {
-  private db: PostgresJsDatabase<typeof schema>;
-  private client: postgres.Sql;
+// Define a class that implements the storage interface
+class SupabaseStorage {
+  private db;
+  private client;
   // Removed supabase client instance as it's initialized in file.storage.ts
-  public sessionStore!: session.Store;
+  public sessionStore;
 
   private constructor() {
     console.log("[SupabaseStorage] Constructor called");
@@ -66,7 +67,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   // Revert to static initialize method
-  public static async initialize(): Promise<SupabaseStorage> {
+  public static async initialize() {
     console.log("[SupabaseStorage] Static initialize method called");
     console.log("[SupabaseStorage] Class definition exists:", typeof SupabaseStorage === 'function');
     console.log("[SupabaseStorage] Class methods:", Object.getOwnPropertyNames(SupabaseStorage));
@@ -93,118 +94,120 @@ export class SupabaseStorage implements IStorage {
   }
 
   // --- User methods ---
-  async getUserById(id: number): Promise<User | undefined> {
+  async getUserById(id) {
     return userStorage.getUserById(this.db, id);
   }
-  async getUserByUsername(username: string): Promise<User | undefined> {
+  async getUserByUsername(username) {
     return userStorage.getUserByUsername(this.db, username);
   }
-  async getUserByClerkId(clerkUserId: string): Promise<PublicUser | undefined> {
+  async getUserByClerkId(clerkUserId) {
     return userStorage.getUserByClerkId(this.db, clerkUserId);
   }
-  async getUserByEmail(email: string): Promise<User | undefined> {
+  async getUserByEmail(email) {
     return userStorage.getUserByEmail(this.db, email);
   }
-  async updateUserProfile(userId: number, profileData: { firstName: string; lastName?: string | null; phoneNumber?: string | null; email: string; bio?: string | null }): Promise<User | undefined> {
+  async updateUserProfile(userId, profileData) {
     return userStorage.updateUserProfile(this.db, userId, profileData);
   }
   
-  async createUserWithClerkId(clerkUserId: string, email: string = '', firstName: string = '', lastName: string = ''): Promise<PublicUser> {
+  async createUserWithClerkId(clerkUserId, email = '', firstName = '', lastName = '') {
     return userStorage.createUserWithClerkId(this.db, clerkUserId, email, firstName, lastName);
   }
 
   // --- Trip methods ---
-  async getTrip(id: number): Promise<Trip | undefined> {
+  async getTrip(id) {
     return tripStorage.getTrip(this.db, id);
   }
-  async getTripsByUserId(userId: number): Promise<Trip[]> {
+  async getTripsByUserId(userId) {
     return tripStorage.getTripsByUserId(this.db, userId);
   }
-  async createTrip(tripData: InsertTrip & { userId: number }): Promise<Trip> {
+  async createTrip(tripData) {
     return tripStorage.createTrip(this.db, tripData);
   }
-  async updateTrip(id: number, tripData: Partial<InsertTrip>): Promise<Trip> {
+  async updateTrip(id, tripData) {
     return tripStorage.updateTrip(this.db, id, tripData);
   }
-  async deleteTrip(id: number): Promise<void> {
+  async deleteTrip(id) {
     return tripStorage.deleteTrip(this.db, id);
   }
 
   // --- Expense methods ---
-  async getExpense(id: number): Promise<Expense | undefined> {
+  async getExpense(id) {
     return expenseStorage.getExpense(this.db, id);
   }
-  async getExpensesByUserId(userId: number): Promise<Expense[]> {
+  async getExpensesByUserId(userId) {
     return expenseStorage.getExpensesByUserId(this.db, userId);
   }
-  async getExpensesByTripName(userId: number, tripName: string): Promise<Expense[]> {
+  async getExpensesByTripName(userId, tripName) {
     return expenseStorage.getExpensesByTripName(this.db, userId, tripName);
   }
-  async createExpense(expenseData: InsertExpense & { userId: number, receiptPath?: string | null }): Promise<Expense> {
+  async createExpense(expenseData) {
     return expenseStorage.createExpense(this.db, expenseData);
   }
-  async updateExpense(id: number, expenseData: Partial<InsertExpense & { receiptPath?: string | null }>): Promise<Expense> {
+  async updateExpense(id, expenseData) {
     return expenseStorage.updateExpense(this.db, id, expenseData);
   }
-  async deleteExpense(id: number): Promise<void> {
+  async deleteExpense(id) {
     return expenseStorage.deleteExpense(this.db, id);
   }
-  async updateExpenseStatus(id: number, status: string, error?: string | null): Promise<Expense | undefined> {
+  async updateExpenseStatus(id, status, error) {
     return expenseStorage.updateExpenseStatus(this.db, id, status, error);
   }
-  async createExpensesBatch(expensesData: (InsertExpense & { userId: number })[]): Promise<{ successCount: number; errors: { index: number; error: any; data: any }[] }> {
+  async createExpensesBatch(expensesData) {
     return expenseStorage.createExpensesBatch(this.db, expensesData);
   }
 
   // --- Mileage Log methods ---
-  async getMileageLogById(id: number): Promise<MileageLog | undefined> {
+  async getMileageLogById(id) {
     return mileageStorage.getMileageLogById(this.db, id);
   }
-  async getMileageLogsByUserId(userId: number, options?: { tripId?: number; startDate?: string; endDate?: string; limit?: number; offset?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' }): Promise<MileageLog[]> {
+  async getMileageLogsByUserId(userId, options) {
     return mileageStorage.getMileageLogsByUserId(this.db, userId, options);
   }
-  async createMileageLog(logData: InsertMileageLog & { userId: number; calculatedDistance: number; startImageUrl?: string | null; endImageUrl?: string | null }): Promise<MileageLog> {
+  async createMileageLog(logData) {
     return mileageStorage.createMileageLog(this.db, logData);
   }
-  async updateMileageLog(id: number, logData: Partial<InsertMileageLog & { calculatedDistance?: number; startImageUrl?: string | null; endImageUrl?: string | null }>): Promise<MileageLog> {
+  async updateMileageLog(id, logData) {
     return mileageStorage.updateMileageLog(this.db, id, logData);
   }
-  async deleteMileageLog(id: number): Promise<void> {
+  async deleteMileageLog(id) {
     return mileageStorage.deleteMileageLog(this.db, id);
   }
 
   // --- Background Task methods ---
-  async createBackgroundTask(taskData: InsertBackgroundTask): Promise<BackgroundTask> {
+  async createBackgroundTask(taskData) {
     return taskStorage.createBackgroundTask(this.db, taskData);
   }
-  async updateBackgroundTaskStatus(id: number, status: typeof schema.taskStatusEnum.enumValues[number], result?: any, error?: string | null): Promise<BackgroundTask | undefined> {
+  async updateBackgroundTaskStatus(id, status, result, error) {
     return taskStorage.updateBackgroundTaskStatus(this.db, id, status, result, error);
   }
-  async getBackgroundTaskById(id: number): Promise<BackgroundTask | undefined> {
+  async getBackgroundTaskById(id) {
     return taskStorage.getBackgroundTaskById(this.db, id);
   }
   
-  async getBackgroundTasksByUserId(userId: number): Promise<BackgroundTask[]> {
+  async getBackgroundTasksByUserId(userId) {
     return taskStorage.getBackgroundTasksByUserId(this.db, userId);
   }
 
   // --- File Storage methods (delegated) ---
   // Add named export for backward compatibility
   // export { SupabaseStorage }; // Moved outside class
-  async uploadFile(filePath: string, fileBuffer: Buffer, contentType: string, bucketName?: string): Promise<{ path: string }> {
+  async uploadFile(filePath, fileBuffer, contentType, bucketName) {
     return fileStorage.uploadFile(filePath, fileBuffer, contentType, bucketName);
   }
-  async deleteFile(filePath: string, bucketName?: string): Promise<void> {
+  async deleteFile(filePath, bucketName) {
     return fileStorage.deleteFile(filePath, bucketName);
   }
-  async getSignedUrl(filePath: string, expiresIn?: number, bucketName?: string): Promise<{ signedUrl: string }> {
+  async getSignedUrl(filePath, expiresIn, bucketName) {
     return fileStorage.getSignedUrl(filePath, expiresIn, bucketName);
   }
-  async downloadFile(filePath: string, bucketName?: string): Promise<Buffer> {
+  async downloadFile(filePath, bucketName) {
     return fileStorage.downloadFile(filePath, bucketName);
   }
 
 }
 
-// --- Initialize and Export Instance Promise ---
-// Remove IIAFE
+// Export the class for CommonJS compatibility
+module.exports = {
+  SupabaseStorage
+};

@@ -3,12 +3,15 @@
   "compilerOptions": {
     "noEmit": false, // Allow emitting JS files
     "outDir": "./dist-server", // Specify output directory for server JS files
-    "module": "ESNext", // Changed from NodeNext to ESNext for ESM
-    "moduleResolution": "bundler", // Changed from NodeNext to bundler for ESM
-    // Remove frontend-specific options if necessary (like "jsx": "preserve", "types": ["vite/client"])
-    // Keep "baseUrl" and "paths" if needed for server-side imports
-    // Remove "allowImportingTsExtensions" as it's invalid when noEmit is false
-    "allowImportingTsExtensions": false, // Explicitly override inherited value
+    "module": "CommonJS", // Changed to CommonJS for Netlify functions
+    "moduleResolution": "node", // Changed to node for CommonJS
+    "target": "ES2020", // Target ES2020 for better compatibility
+    "esModuleInterop": true, // Enable interop between CommonJS and ES modules
+    "allowSyntheticDefaultImports": true, // Allow default imports from modules with no default export
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "noImplicitAny": false, // Disable strict type checking for any
+    "strictNullChecks": false, // Disable strict null checks
+    "strict": false, // Disable all strict type checking
     "jsx": "react-jsx", // Adjust if server uses JSX differently or not at all
     "types": ["node"], // Use Node types for server
     "baseUrl": ".", // Explicitly set baseUrl

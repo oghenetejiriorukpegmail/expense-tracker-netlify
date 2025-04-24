@@ -4,67 +4,52 @@ const schema = require('../shared/schema'); // Import schema for enum
 const session = require("express-session");
 
 // Type definitions for TypeScript
-type User = any;
-type PublicUser = any;
-type InsertUser = any;
-type Trip = any;
-type InsertTrip = any;
-type Expense = any;
-type InsertExpense = any;
-type MileageLog = any;
-type InsertMileageLog = any;
-type BackgroundTask = any;
-type InsertBackgroundTask = any;
-
-// Define the storage interface
-export interface IStorage {
+/**
+ * Storage interface for database operations
+ * @interface
+ */
+class IStorage {
   // User methods
-  getUserById(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  // Removed getUserByAuthId
-  getUserByClerkId(clerkUserId: string): Promise<PublicUser | undefined>; // Added getUserByClerkId
-  getUserByEmail(email: string): Promise<User | undefined>;
-  // User creation with Clerk ID
-  createUserWithClerkId(clerkUserId: string, email?: string, firstName?: string, lastName?: string): Promise<PublicUser>;
-  updateUserProfile(userId: number, profileData: { firstName: string; email: string; bio?: string | null; lastName?: string | null; phoneNumber?: string | null }): Promise<User | undefined>; // Added missing optional fields
-  // Removed updateUserPassword (handled by Clerk)
+  async getUserById(id) { return null; }
+  async getUserByUsername(username) { return null; }
+  async getUserByClerkId(clerkUserId) { return null; }
+  async getUserByEmail(email) { return null; }
+  async createUserWithClerkId(clerkUserId, email, firstName, lastName) { return null; }
+  async updateUserProfile(userId, profileData) { return null; }
 
   // Trip methods
-  getTrip(id: number): Promise<Trip | undefined>;
-  getTripsByUserId(userId: number): Promise<Trip[]>;
-  createTrip(trip: InsertTrip & { userId: number }): Promise<Trip>;
-  updateTrip(id: number, trip: Partial<InsertTrip>): Promise<Trip>;
-  deleteTrip(id: number): Promise<void>;
+  async getTrip(id) { return null; }
+  async getTripsByUserId(userId) { return null; }
+  async createTrip(trip) { return null; }
+  async updateTrip(id, trip) { return null; }
+  async deleteTrip(id) { return null; }
 
   // Expense methods
-  getExpense(id: number): Promise<Expense | undefined>;
-  getExpensesByUserId(userId: number): Promise<Expense[]>;
-  getExpensesByTripName(userId: number, tripName: string): Promise<Expense[]>;
-  createExpense(expense: InsertExpense & { userId: number, receiptPath?: string | null }): Promise<Expense>;
-  updateExpense(id: number, expense: Partial<InsertExpense & { receiptPath?: string | null }>): Promise<Expense>;
-  deleteExpense(id: number): Promise<void>;
+  async getExpense(id) { return null; }
+  async getExpensesByUserId(userId) { return null; }
+  async getExpensesByTripName(userId, tripName) { return null; }
+  async createExpense(expense) { return null; }
+  async updateExpense(id, expense) { return null; }
+  async deleteExpense(id) { return null; }
 
   // Mileage Log methods
-  getMileageLogById(id: number): Promise<MileageLog | undefined>;
-  getMileageLogsByUserId(userId: number, options?: { tripId?: number; startDate?: string; endDate?: string; limit?: number; offset?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' }): Promise<MileageLog[]>;
-  createMileageLog(log: InsertMileageLog & { userId: number; calculatedDistance: number; startImageUrl?: string | null; endImageUrl?: string | null }): Promise<MileageLog>;
-  updateMileageLog(id: number, log: Partial<InsertMileageLog & { calculatedDistance?: number; startImageUrl?: string | null; endImageUrl?: string | null }>): Promise<MileageLog>;
-  deleteMileageLog(id: number): Promise<void>;
+  async getMileageLogById(id) { return null; }
+  async getMileageLogsByUserId(userId, options) { return null; }
+  async createMileageLog(log) { return null; }
+  async updateMileageLog(id, log) { return null; }
+  async deleteMileageLog(id) { return null; }
 
-  // Session store (might be removable if Clerk handles all session management)
-  sessionStore: session.Store;
+  // Background Task methods
+  async createBackgroundTask(taskData) { return null; }
+  async updateBackgroundTaskStatus(id, status, result, error) { return null; }
+  async getBackgroundTaskById(id) { return null; }
+  async getBackgroundTasksByUserId(userId) { return null; }
 
-  // Background Task methods (needed for interface completeness)
-  createBackgroundTask(taskData: InsertBackgroundTask): Promise<BackgroundTask>;
-  updateBackgroundTaskStatus(id: number, status: typeof schema.taskStatusEnum.enumValues[number], result?: any, error?: string | null): Promise<BackgroundTask | undefined>;
-  getBackgroundTaskById(id: number): Promise<BackgroundTask | undefined>;
-  getBackgroundTasksByUserId(userId: number): Promise<BackgroundTask[]>;
-
-  // File Storage methods (needed for interface completeness)
-  uploadFile(filePath: string, fileBuffer: Buffer, contentType: string, bucketName?: string): Promise<{ path: string }>;
-  deleteFile(filePath: string, bucketName?: string): Promise<void>;
-  getSignedUrl(filePath: string, expiresIn?: number, bucketName?: string): Promise<{ signedUrl: string }>;
-  downloadFile(filePath: string, bucketName?: string): Promise<Buffer>;
+  // File Storage methods
+  async uploadFile(filePath, fileBuffer, contentType, bucketName) { return null; }
+  async deleteFile(filePath, bucketName) { return null; }
+  async getSignedUrl(filePath, expiresIn, bucketName) { return null; }
+  async downloadFile(filePath, bucketName) { return null; }
 }
 
 // MemStorage class removed as it's no longer used.
