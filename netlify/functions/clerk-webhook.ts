@@ -1,5 +1,5 @@
 import { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
-import { SupabaseStorage } from "../../server/supabase-storage";
+// Import dynamically to handle ES modules vs CommonJS issues
 import { Webhook } from "svix";
 import { eq } from "drizzle-orm";
 import * as schema from "../../shared/schema";
@@ -48,7 +48,8 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     };
   }
 
-  let storage: SupabaseStorage | null = null;
+  // Using any type since we're importing dynamically
+  let storage: any = null;
   
   try {
     // Verify the webhook signature
@@ -87,7 +88,8 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       };
     }
 
-    // Initialize the Supabase storage
+    // Import and initialize the Supabase storage dynamically
+    const { SupabaseStorage } = await import("../../server/supabase-storage");
     storage = await SupabaseStorage.initialize();
 
     // Extract user data from the webhook payload

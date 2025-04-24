@@ -35,14 +35,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserById = getUserById;
 exports.getUserByUsername = getUserByUsername;
 exports.getUserByClerkId = getUserByClerkId;
 exports.getUserByEmail = getUserByEmail;
 exports.updateUserProfile = updateUserProfile;
+exports.createUserWithClerkId = createUserWithClerkId;
 var schema = require("@shared/schema");
 var drizzle_orm_1 = require("drizzle-orm");
+var uuid_1 = require("uuid");
 // User methods extracted from SupabaseStorage
 function getUserById(db, id) {
     return __awaiter(this, void 0, void 0, function () {
@@ -150,6 +163,66 @@ function updateUserProfile(db, userId, profileData) {
                         return [2 /*return*/, undefined];
                     }
                     return [2 /*return*/, result[0]];
+            }
+        });
+    });
+}
+// Create a new user with Clerk ID
+function createUserWithClerkId(db_1, clerkUserId_1) {
+    return __awaiter(this, arguments, void 0, function (db, clerkUserId, email, firstName, lastName) {
+        var username, password, userData, result, user, _, publicUser, error_1;
+        var _a;
+        if (email === void 0) { email = ''; }
+        if (firstName === void 0) { firstName = ''; }
+        if (lastName === void 0) { lastName = ''; }
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    username = email ? email.split('@')[0] + '-' + Math.floor(Math.random() * 10000) : 'user-' + (0, uuid_1.v4)().substring(0, 8);
+                    password = (0, uuid_1.v4)();
+                    userData = {
+                        username: username,
+                        password: password,
+                        email: email || "".concat(username, "@example.com"), // Fallback email if none provided
+                        firstName: firstName || '',
+                        lastName: lastName || '',
+                        phoneNumber: '',
+                        authUserId: clerkUserId,
+                    };
+                    // DIAGNOSTIC LOG: Log the user data being inserted
+                    console.log("DIAGNOSTIC - User creation data:", {
+                        attemptedColumns: Object.keys(userData),
+                        passwordIncluded: userData.hasOwnProperty('password'),
+                        clerkUserId: clerkUserId,
+                        username: username,
+                        email: userData.email
+                    });
+                    _b.label = 1;
+                case 1:
+                    _b.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, db.insert(schema.users)
+                            .values(userData)
+                            .returning()];
+                case 2:
+                    result = _b.sent();
+                    if (!result.length) {
+                        throw new Error('Failed to create user');
+                    }
+                    user = result[0];
+                    _ = user.password, publicUser = __rest(user, ["password"]);
+                    return [2 /*return*/, publicUser];
+                case 3:
+                    error_1 = _b.sent();
+                    // DIAGNOSTIC LOG: Enhanced error logging
+                    console.error("DIAGNOSTIC - User creation error details:", {
+                        error: ((_a = error_1 === null || error_1 === void 0 ? void 0 : error_1.toString) === null || _a === void 0 ? void 0 : _a.call(error_1)) || 'Unknown error',
+                        errorObject: JSON.stringify(error_1, Object.getOwnPropertyNames(error_1 || {})),
+                        query: (error_1 === null || error_1 === void 0 ? void 0 : error_1.query) || 'Query not available',
+                        params: (error_1 === null || error_1 === void 0 ? void 0 : error_1.params) || 'Params not available',
+                        code: (error_1 === null || error_1 === void 0 ? void 0 : error_1.code) || 'Code not available'
+                    });
+                    throw error_1;
+                case 4: return [2 /*return*/];
             }
         });
     });

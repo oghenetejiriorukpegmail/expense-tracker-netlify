@@ -147,6 +147,16 @@ var SupabaseStorage = /** @class */ (function () {
             });
         });
     };
+    SupabaseStorage.prototype.createUserWithClerkId = function (clerkUserId_1) {
+        return __awaiter(this, arguments, void 0, function (clerkUserId, email, firstName, lastName) {
+            if (email === void 0) { email = ''; }
+            if (firstName === void 0) { firstName = ''; }
+            if (lastName === void 0) { lastName = ''; }
+            return __generator(this, function (_a) {
+                return [2 /*return*/, userStorage.createUserWithClerkId(this.db, clerkUserId, email, firstName, lastName)];
+            });
+        });
+    };
     // --- Trip methods ---
     SupabaseStorage.prototype.getTrip = function (id) {
         return __awaiter(this, void 0, void 0, function () {

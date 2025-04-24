@@ -1,9 +1,6 @@
 import { users, trips, expenses } from "@shared/schema";
 import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog } from "@shared/schema"; // Added PublicUser
 import session from "express-session";
-import createMemoryStore from "memorystore";
-
-const MemoryStore = createMemoryStore(session);
 
 // Define the storage interface
 export interface IStorage {
