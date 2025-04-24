@@ -1,21 +1,21 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from '../shared/schema.js';
-import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema.js";
+import * as schema from '../shared/schema';
+import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema";
 import session from "express-session";
 import connectPgSimple from 'connect-pg-simple';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // Import the interface only, not the entire module to avoid circular dependencies
-import type { IStorage } from './storage.js';
+import type { IStorage } from './storage';
 
 // Import storage functions from separate files
-import * as userStorage from './storage/user.storage.js';
-import * as tripStorage from './storage/trip.storage.js';
-import * as expenseStorage from './storage/expense.storage.js';
-import * as mileageStorage from './storage/mileage.storage.js';
-import * as taskStorage from './storage/task.storage.js';
-import * as fileStorage from './storage/file.storage.js';
+import * as userStorage from './storage/user.storage';
+import * as tripStorage from './storage/trip.storage';
+import * as expenseStorage from './storage/expense.storage';
+import * as mileageStorage from './storage/mileage.storage';
+import * as taskStorage from './storage/task.storage';
+import * as fileStorage from './storage/file.storage';
 
 // Get Supabase connection string and storage details from environment variables
 const databaseUrl = process.env.DATABASE_URL;

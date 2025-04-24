@@ -1,6 +1,6 @@
-import { users, trips, expenses } from "../shared/schema.js";
-import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema.js"; // Added PublicUser, BackgroundTask, InsertBackgroundTask
-import * as schema from '../shared/schema.js'; // Import schema for enum
+import { users, trips, expenses } from "../shared/schema";
+import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "../shared/schema"; // Added PublicUser, BackgroundTask, InsertBackgroundTask
+import * as schema from '../shared/schema'; // Import schema for enum
 import session from "express-session";
 
 // Define the storage interface
@@ -57,7 +57,7 @@ export interface IStorage {
 // MemStorage class removed as it's no longer used.
 
 // Use static import again
-import { SupabaseStorage } from './supabase-storage.js';
+import { SupabaseStorage } from './supabase-storage';
 
 // Export an async function to initialize the storage
 export async function initializeStorage(): Promise<IStorage> {
