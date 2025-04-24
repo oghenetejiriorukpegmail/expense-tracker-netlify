@@ -1,5 +1,5 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '@shared/schema';
+import * as schema from '../../shared/schema.js';
 import type { MileageLog, InsertMileageLog } from "@shared/schema";
 import { eq, and, desc, gte, lte, asc } from 'drizzle-orm';
 
@@ -27,17 +27,21 @@ export async function getMileageLogsByUserId(db: PostgresJsDatabase<typeof schem
   const sortOrderFunc = options?.sortOrder === 'asc' ? asc : desc;
   const sortColumn = schema.mileageLogs[sortBy as keyof typeof schema.mileageLogs.$inferSelect] ?? schema.mileageLogs.tripDate;
 
-  // Build the query dynamically and execute
-  let query = db.select().from(schema.mileageLogs).where(and(...conditions)).orderBy(sortOrderFunc(sortColumn));
+  // Build the query dynamically
+  let queryBuilder = db.select().from(schema.mileageLogs).where(and(...conditions));
 
+  // Apply limit and offset before orderBy
   if (options?.limit !== undefined) {
-      query = query.limit(options.limit);
+      queryBuilder = queryBuilder.limit(options.limit);
   }
   if (options?.offset !== undefined) {
-      query = query.offset(options.offset);
+      queryBuilder = queryBuilder.offset(options.offset);
   }
 
-  return await query;
+  // Apply orderBy and execute
+  const finalQuery = queryBuilder.orderBy(sortOrderFunc(sortColumn));
+
+  return await finalQuery;
 }
 
 

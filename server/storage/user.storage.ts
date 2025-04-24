@@ -1,5 +1,5 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '@shared/schema';
+import * as schema from '../../shared/schema.js';
 import type { User, PublicUser, InsertUser } from "@shared/schema";
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';

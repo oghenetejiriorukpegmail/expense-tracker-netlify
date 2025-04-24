@@ -1,6 +1,6 @@
 import 'dotenv/config'; // Load environment variables first!
 // Import the Supabase storage initializer which handles migrations
-import { SupabaseStorage } from './supabase-storage';
+import { SupabaseStorage } from './supabase-storage.js';
 
 console.log("Running database migrations via SupabaseStorage initializer...");
 

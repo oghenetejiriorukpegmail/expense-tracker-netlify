@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { testOCR } from "../util/ocr"; // Import OCR types and test function
-import { updateOcrApiKey, setDefaultOcrMethod, saveConfig, loadConfig } from "../config";
+import { testOCR } from "../util/ocr.js"; // Import OCR types and test function
+import { updateOcrApiKey, setDefaultOcrMethod, saveConfig, loadConfig } from "../config.js";
 import type { User, PublicUser } from "@shared/schema"; // Import PublicUser
 
 // Define request type with user property

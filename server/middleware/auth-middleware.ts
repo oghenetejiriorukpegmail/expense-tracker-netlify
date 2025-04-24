@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/clerk-sdk-node";
-import type { IStorage } from "../storage"; // Import the interface type
+import type { IStorage } from "../storage.js"; // Import the interface type
 
 // Define request type augmentation for Clerk auth
 interface ClerkRequest extends Request {

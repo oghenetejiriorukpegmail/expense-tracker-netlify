@@ -3,10 +3,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet"; // Import helmet
 import serverless from 'serverless-http'; // Import serverless-http
 import { clerkMiddleware } from '@clerk/express'; // Import Clerk middleware
-import { registerRoutes } from "./routes";
-// import { setupVite, serveStatic, log } from "./vite"; // Vite/Static serving not needed for serverless
-import { initializeStorage } from "./storage"; // Import the initialization function
-import { initializeEnvFromConfig } from "./config"; // Import config initialization
+import { registerRoutes } from "./routes.js";
+// import { setupVite, serveStatic, log } from "./vite.js"; // Vite/Static serving not needed for serverless
+import { initializeStorage } from "./storage.js"; // Import the initialization function
+import { initializeEnvFromConfig } from "./config.js"; // Import config initialization
 
 // Initialize environment variables from config file first
 initializeEnvFromConfig();

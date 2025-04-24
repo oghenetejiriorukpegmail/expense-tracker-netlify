@@ -1,16 +1,16 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
-import type { IStorage } from "./storage"; // Import the interface type
-import { createAuthMiddleware } from "./middleware/auth-middleware"; // Import our custom auth middleware
+import type { IStorage } from "./storage.js"; // Import the interface type
+import { createAuthMiddleware } from "./middleware/auth-middleware.js"; // Import our custom auth middleware
 
 // Import the new router creation functions
-import { createProfileRouter } from "./routes/profile.routes";
-import { createTripRouter } from "./routes/trips.routes";
-import { createExpenseRouter } from "./routes/expenses.routes";
-import { createMileageLogRouter } from "./routes/mileage.routes";
-import { createSettingsRouter } from "./routes/settings.routes";
-import { createBackgroundTaskRouter } from "./routes/tasks.routes";
-import { createExportRouter } from "./routes/export.routes";
+import { createProfileRouter } from "./routes/profile.routes.js";
+import { createTripRouter } from "./routes/trips.routes.js";
+import { createExpenseRouter } from "./routes/expenses.routes.js";
+import { createMileageLogRouter } from "./routes/mileage.routes.js";
+import { createSettingsRouter } from "./routes/settings.routes.js";
+import { createBackgroundTaskRouter } from "./routes/tasks.routes.js";
+import { createExportRouter } from "./routes/export.routes.js";
 
 // Removed old helper functions (generateExcelReport, generateZipArchive)
 // Removed old route registration functions (registerProfileRoutes, etc.)

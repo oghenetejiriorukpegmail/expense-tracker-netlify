@@ -1,12 +1,12 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { insertMileageLogSchema, rawInsertMileageLogSchema } from "@shared/schema";
-import { upload } from "../middleware/multer-config"; // Assuming multer config is still needed
-import type { IStorage } from "../storage"; // Import the interface type
+import { upload } from "../middleware/multer-config.js"; // Assuming multer config is still needed
+import type { IStorage } from "../storage.js"; // Import the interface type
 import type { User, PublicUser } from "@shared/schema"; // Import PublicUser
 import { v4 as uuidv4 } from "uuid"; // Import uuid
-import { loadConfig } from "../config"; // Import config loading
-import { processOdometerImageWithAI, OcrProvider } from "../util/ocr"; // Import OCR function and OcrProvider type
+import { loadConfig } from "../config.js"; // Import config loading
+import { processOdometerImageWithAI, OcrProvider } from "../util/ocr.js"; // Import OCR function and OcrProvider type
 
 // Define request type with user property and Multer
 interface AuthenticatedMulterRequest extends Request {

@@ -1,5 +1,5 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '@shared/schema';
+import * as schema from '../../shared/schema.js';
 import type { Trip, InsertTrip } from "@shared/schema";
 import { eq, and, desc } from 'drizzle-orm';
 
