@@ -1,5 +1,5 @@
 import { users, trips, expenses } from "@shared/schema";
-import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog } from "@shared/schema"; // Added PublicUser
+import type { User, PublicUser, InsertUser, Trip, InsertTrip, Expense, InsertExpense, MileageLog, InsertMileageLog, BackgroundTask, InsertBackgroundTask } from "@shared/schema"; // Added PublicUser, BackgroundTask, InsertBackgroundTask
 import session from "express-session";
 
 // Define the storage interface
@@ -39,43 +39,49 @@ export interface IStorage {
 
   // Session store (might be removable if Clerk handles all session management)
   sessionStore: session.Store;
+
+  // Background Task methods (needed for interface completeness)
+  createBackgroundTask(taskData: InsertBackgroundTask): Promise<BackgroundTask>;
+  updateBackgroundTaskStatus(id: number, status: typeof schema.taskStatusEnum.enumValues[number], result?: any, error?: string | null): Promise<BackgroundTask | undefined>;
+  getBackgroundTaskById(id: number): Promise<BackgroundTask | undefined>;
+  getBackgroundTasksByUserId(userId: number): Promise<BackgroundTask[]>;
+
+  // File Storage methods (needed for interface completeness)
+  uploadFile(filePath: string, fileBuffer: Buffer, contentType: string, bucketName?: string): Promise<{ path: string }>;
+  deleteFile(filePath: string, bucketName?: string): Promise<void>;
+  getSignedUrl(filePath: string, expiresIn?: number, bucketName?: string): Promise<{ signedUrl: string }>;
+  downloadFile(filePath: string, bucketName?: string): Promise<Buffer>;
 }
 
 // MemStorage class removed as it's no longer used.
 
-// Remove static import
-// import { SupabaseStorage } from './supabase-storage';
+// Use static import again
+import { SupabaseStorage } from './supabase-storage';
 
 // Export an async function to initialize the storage
 export async function initializeStorage(): Promise<IStorage> {
   console.log("[STORAGE] initializeStorage function called.");
 
-  // Dynamically import SupabaseStorage
-  console.log("[STORAGE] Dynamically importing SupabaseStorage...");
-  const { SupabaseStorage } = await import('./supabase-storage');
-  console.log("[STORAGE] Dynamic import complete.");
-
-  console.log("[STORAGE] SupabaseStorage after dynamic import:", SupabaseStorage);
-  console.log("[STORAGE] SupabaseStorage.initialize after dynamic import:", SupabaseStorage ? SupabaseStorage.initialize : 'SupabaseStorage is null/undefined');
-
   // Check if SupabaseStorage is properly imported
   if (!SupabaseStorage) {
-    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined after dynamic import");
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage is undefined in initializeStorage");
     throw new Error("SupabaseStorage class is undefined. Check import paths and circular dependencies.");
   }
 
   console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
-  console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
+  // Check for the new static factory method
+  console.log("[STORAGE] SupabaseStorage.createAndInitialize exists:", typeof SupabaseStorage.createAndInitialize === 'function');
 
-  // Ensure SupabaseStorage.initialize exists before calling it
-  if (typeof SupabaseStorage.initialize !== 'function') {
-    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function after dynamic import");
-    throw new Error("SupabaseStorage.initialize is not a function. Check class implementation.");
+  // Ensure SupabaseStorage.createAndInitialize exists before calling it
+  if (typeof SupabaseStorage.createAndInitialize !== 'function') {
+    console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.createAndInitialize is not a function");
+    throw new Error("SupabaseStorage.createAndInitialize is not a function. Check class implementation.");
   }
 
   try {
-    console.log("[STORAGE] Calling SupabaseStorage.initialize()...");
-    const storageInstance = await SupabaseStorage.initialize();
+    // Call the new static factory method
+    console.log("[STORAGE] Calling SupabaseStorage.createAndInitialize()...");
+    const storageInstance = await SupabaseStorage.createAndInitialize();
     console.log("[STORAGE] SupabaseStorage initialization successful");
     console.log("[STORAGE] Storage instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storageInstance)));
     return storageInstance;

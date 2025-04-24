@@ -48,27 +48,41 @@ export class SupabaseStorage implements IStorage {
     // Removed Supabase client initialization here
   }
 
-  public static async initialize(): Promise<SupabaseStorage> {
-    const instance = new SupabaseStorage();
-    console.log("Testing database connection...");
+  // Make initialize an instance method (and private)
+  private async initializeInstance(): Promise<void> {
+    console.log("[SupabaseStorage] Initializing instance...");
+    console.log("[SupabaseStorage] Testing database connection...");
     try {
-      await instance.client`SELECT 1`;
-      console.log("Successfully connected to Supabase database.");
+      await this.client`SELECT 1`;
+      console.log("[SupabaseStorage] Successfully connected to Supabase database.");
     } catch (error) {
-      console.error("FATAL ERROR: Failed to connect to Supabase database during startup.");
-      console.error("Error details:", error);
-      process.exit(1);
+      console.error("[SupabaseStorage] FATAL ERROR: Failed to connect to Supabase database during startup.");
+      console.error("[SupabaseStorage] Error details:", error);
+      throw error; // Re-throw to be caught by createAndInitialize
     }
 
     const PgStore = connectPgSimple(session);
-    instance.sessionStore = new PgStore({
+    this.sessionStore = new PgStore({
         conString: databaseUrl,
         createTableIfMissing: false,
     });
-    console.log("PostgreSQL session store initialized.");
-    console.log("Storage initialized successfully."); // Moved log here
+    console.log("[SupabaseStorage] PostgreSQL session store initialized.");
+    console.log("[SupabaseStorage] Instance initialized successfully.");
+  }
 
-    return instance;
+  // Static factory method
+  public static async createAndInitialize(): Promise<SupabaseStorage> {
+    console.log("[SupabaseStorage] createAndInitialize called.");
+    const instance = new SupabaseStorage();
+    try {
+      await instance.initializeInstance();
+      console.log("[SupabaseStorage] createAndInitialize successful.");
+      return instance;
+    } catch (error) {
+      console.error("[SupabaseStorage] FATAL ERROR during createAndInitialize:", error);
+      // Decide how to handle this - maybe re-throw or exit
+      throw new Error("Failed to create and initialize SupabaseStorage.");
+    }
   }
 
   // --- User methods ---

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/clerk-sdk-node";
-import type { SupabaseStorage } from "../supabase-storage";
+import type { IStorage } from "../storage"; // Import the interface type
 
 // Define request type augmentation for Clerk auth
 interface ClerkRequest extends Request {
@@ -13,7 +13,7 @@ interface ClerkRequest extends Request {
 }
 
 // Create a middleware function that verifies authentication and attaches user data
-export function createAuthMiddleware(storage: SupabaseStorage) {
+export function createAuthMiddleware(storage: IStorage) { // Use IStorage interface
   console.log("[AUTH] Creating auth middleware with storage");
   
   return async (req: ClerkRequest, res: Response, next: NextFunction) => {

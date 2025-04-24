@@ -1,6 +1,6 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
-import type { SupabaseStorage } from "./supabase-storage"; // Use specific type
+import type { IStorage } from "./storage"; // Import the interface type
 import { createAuthMiddleware } from "./middleware/auth-middleware"; // Import our custom auth middleware
 
 // Import the new router creation functions
@@ -17,7 +17,7 @@ import { createExportRouter } from "./routes/export.routes";
 // Removed old middleware import (authenticateJWT)
 
 // --- Main Route Registration ---
-export async function registerRoutes(app: Express, storage: SupabaseStorage): Promise<Server> {
+export async function registerRoutes(app: Express, storage: IStorage): Promise<Server> { // Use IStorage interface
   console.log("[ROUTES] Starting route registration with storage instance...");
   
   try {
@@ -27,7 +27,9 @@ export async function registerRoutes(app: Express, storage: SupabaseStorage): Pr
     }
     
     // Log storage instance details to verify it's properly initialized
-    console.log("[ROUTES] Storage instance received:", storage ? "Valid SupabaseStorage instance" : "UNDEFINED");
+    // Log storage instance details to verify it's properly initialized
+    // Check if it has a specific method from the interface to be more certain
+    console.log("[ROUTES] Storage instance received:", storage && typeof (storage as any).getUserByClerkId === 'function' ? "Valid IStorage instance" : "INVALID or UNDEFINED");
     
     // Clerk middleware is applied in server/index.ts
     

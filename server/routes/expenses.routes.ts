@@ -3,7 +3,7 @@ import { z } from "zod";
 import * as schema from '@shared/schema'; // Import schema
 import { insertExpenseSchema } from "@shared/schema";
 import { upload } from "../middleware/multer-config"; // Assuming multer config is still needed
-import type { SupabaseStorage } from "../supabase-storage";
+import type { IStorage } from "../storage"; // Import the interface type
 import type { User, InsertExpense, PublicUser } from "@shared/schema"; // Import InsertExpense
 import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { loadConfig } from "../config"; // Import config loading
@@ -14,7 +14,7 @@ interface AuthenticatedMulterRequest extends Request {
   file?: any; // Multer file
 }
 
-export function createExpenseRouter(storage: SupabaseStorage): express.Router {
+export function createExpenseRouter(storage: IStorage): express.Router { // Use IStorage interface
   const router = express.Router();
 
   // GET /api/expenses
@@ -102,9 +102,9 @@ export function createExpenseRouter(storage: SupabaseStorage): express.Router {
       }
 
       let supabasePath: string | null = null;
-      if (req.file) {
-        const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${req.file.originalname}`;
-        const uploadResult = await storage.uploadFile(uniquePath, req.file.buffer, req.file.mimetype);
+      if (authReq.file) { // Use authReq.file
+        const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
+        const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
         supabasePath = uploadResult.path;
         console.log(`Uploaded receipt for new expense to Supabase: ${supabasePath}`);
       }
@@ -176,13 +176,13 @@ export function createExpenseRouter(storage: SupabaseStorage): express.Router {
 
 
       let supabasePath = expense.receiptPath;
-      if (req.file) {
+      if (authReq.file) { // Use authReq.file
         if (expense.receiptPath) {
           console.log(`Deleting old receipt ${expense.receiptPath} from Supabase.`);
-          await storage.deleteFile(expense.receiptPath).catch(e => console.error("Failed to delete old Supabase receipt:", e));
+          await storage.deleteFile(expense.receiptPath).catch((e: any) => console.error("Failed to delete old Supabase receipt:", e)); // Add type to catch
         }
-        const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${req.file.originalname}`;
-        const uploadResult = await storage.uploadFile(uniquePath, req.file.buffer, req.file.mimetype);
+        const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
+        const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
         supabasePath = uploadResult.path;
         console.log(`Uploaded new receipt for expense ${expenseId} to Supabase: ${supabasePath}`);
       }
@@ -220,7 +220,7 @@ export function createExpenseRouter(storage: SupabaseStorage): express.Router {
 
       if (expense.receiptPath) {
         console.log(`Deleting receipt ${expense.receiptPath} from Supabase for expense ${expenseId}.`);
-        await storage.deleteFile(expense.receiptPath).catch(e => console.error("Failed to delete Supabase receipt:", e));
+        await storage.deleteFile(expense.receiptPath).catch((e: any) => console.error("Failed to delete Supabase receipt:", e)); // Add type to catch
       }
       await storage.deleteExpense(expenseId);
       res.status(204).send();

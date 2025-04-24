@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
-import type { SupabaseStorage } from "../supabase-storage";
+import type { IStorage } from "../storage"; // Import the interface type
 import type { User, PublicUser } from "@shared/schema"; // Import PublicUser
 
 // Define request type with user property
@@ -8,7 +8,7 @@ interface AuthenticatedRequest extends Request {
   user: PublicUser; // Our middleware attaches the user object here
 }
 
-export function createBackgroundTaskRouter(storage: SupabaseStorage): express.Router {
+export function createBackgroundTaskRouter(storage: IStorage): express.Router { // Use IStorage interface
   const router = express.Router();
 
   // GET /api/background-tasks

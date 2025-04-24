@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { insertMileageLogSchema, rawInsertMileageLogSchema } from "@shared/schema";
 import { upload } from "../middleware/multer-config"; // Assuming multer config is still needed
-import type { SupabaseStorage } from "../supabase-storage";
+import type { IStorage } from "../storage"; // Import the interface type
 import type { User, PublicUser } from "@shared/schema"; // Import PublicUser
 import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { loadConfig } from "../config"; // Import config loading
@@ -14,7 +14,7 @@ interface AuthenticatedMulterRequest extends Request {
   file?: any; // Multer file
 }
 
-export function createMileageLogRouter(storage: SupabaseStorage): express.Router {
+export function createMileageLogRouter(storage: IStorage): express.Router { // Use IStorage interface
   const router = express.Router();
 
   // GET /api/mileage-logs
@@ -95,11 +95,11 @@ export function createMileageLogRouter(storage: SupabaseStorage): express.Router
       // Handle image deletion from Supabase
       if (validatedData.startImageUrl === null && existingLog.startImageUrl) {
           console.log(`Deleting old start image ${existingLog.startImageUrl} from Supabase.`);
-          await storage.deleteFile(existingLog.startImageUrl).catch(e => console.error(`Failed to delete old Supabase start image:`, e));
+          await storage.deleteFile(existingLog.startImageUrl).catch((e: any) => console.error(`Failed to delete old Supabase start image:`, e)); // Add type to catch
       }
       if (validatedData.endImageUrl === null && existingLog.endImageUrl) {
           console.log(`Deleting old end image ${existingLog.endImageUrl} from Supabase.`);
-          await storage.deleteFile(existingLog.endImageUrl).catch(e => console.error(`Failed to delete old Supabase end image:`, e));
+          await storage.deleteFile(existingLog.endImageUrl).catch((e: any) => console.error(`Failed to delete old Supabase end image:`, e)); // Add type to catch
       }
 
       const updatePayload = { ...validatedData, calculatedDistance: calculatedDistance !== undefined ? String(calculatedDistance) : undefined };
@@ -136,7 +136,7 @@ export function createMileageLogRouter(storage: SupabaseStorage): express.Router
       const deleteSupabaseImage = async (imagePath: string | null) => {
           if (!imagePath) return;
           console.log(`Deleting image ${imagePath} from Supabase for mileage log ${logId}.`);
-          await storage.deleteFile(imagePath).catch(e => console.error(`Error deleting Supabase image ${imagePath}:`, e));
+          await storage.deleteFile(imagePath).catch((e: any) => console.error(`Error deleting Supabase image ${imagePath}:`, e)); // Add type to catch
       };
       await deleteSupabaseImage(log.startImageUrl);
       await deleteSupabaseImage(log.endImageUrl);
@@ -154,25 +154,26 @@ export function createMileageLogRouter(storage: SupabaseStorage): express.Router
       const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
-      if (!req.file) return res.status(400).send("No odometer image file uploaded");
+      // Remove the redundant cast here, use the one from line 153
+      if (!authReq.file) return res.status(400).send("No odometer image file uploaded");
 
       // Upload to Supabase
-      const uniquePath = `odometer-images/${internalUserId}/${uuidv4()}-${req.file.originalname}`;
-      const uploadResult = await storage.uploadFile(uniquePath, req.file.buffer, req.file.mimetype);
+      const uniquePath = `odometer-images/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
+      const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
       const supabasePath = uploadResult.path;
       console.log(`Uploaded odometer image to Supabase: ${supabasePath}`);
 
       const config = loadConfig();
       // Cast method to OcrProvider type
       const method = (config.defaultOcrMethod || "gemini") as OcrProvider;
-      console.log(`Processing odometer image buffer (${req.file.mimetype}) using method: ${method}`);
-      const ocrResult = await processOdometerImageWithAI(req.file.buffer, req.file.mimetype, method);
+      console.log(`Processing odometer image buffer (${authReq.file.mimetype}) using method: ${method}`);
+      const ocrResult = await processOdometerImageWithAI(authReq.file.buffer, authReq.file.mimetype, method);
 
       if (ocrResult.success) {
         res.json({ success: true, imageUrl: supabasePath, reading: ocrResult.reading });
       } else {
         console.warn(`Odometer OCR failed for ${supabasePath}: ${ocrResult.error}`);
-        await storage.deleteFile(supabasePath).catch(e => console.error("Failed to delete Supabase file after OCR error:", e));
+        await storage.deleteFile(supabasePath).catch((e: any) => console.error("Failed to delete Supabase file after OCR error:", e)); // Add type to catch
         res.status(400).json({ success: false, imageUrl: null, error: ocrResult.error || "Failed to extract reading." });
       }
     } catch (error) {
