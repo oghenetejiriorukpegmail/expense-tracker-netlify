@@ -2,8 +2,8 @@ import { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
 import { Webhook } from "svix";
 import { eq } from "drizzle-orm";
 import * as schema from "../../shared/schema";
-// Import the storage promise directly
-import { storage } from "../../server/storage";
+// Import SupabaseStorage directly
+import { SupabaseStorage } from "../../server/supabase-storage";
 
 // Define the structure of Clerk webhook events
 interface ClerkWebhookEvent {
@@ -49,7 +49,7 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     };
   }
 
-  // Will be initialized from the imported storage promise
+  // Will be initialized directly in this function
   let storageInstance: any = null;
   
   try {
@@ -89,8 +89,9 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
       };
     }
 
-    // Await the storage promise to get the initialized instance
-    storageInstance = await storage;
+    // Initialize storage directly
+    console.log("Initializing SupabaseStorage directly in webhook handler");
+    storageInstance = await SupabaseStorage.initialize();
 
     // Extract user data from the webhook payload
     const { type, data } = payload;
