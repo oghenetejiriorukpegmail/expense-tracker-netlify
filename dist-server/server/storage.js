@@ -56,6 +56,184 @@ class SupabaseStorage {
         }
     }
 
+    // Expense methods
+    async getExpensesByUserId(userId) {
+        try {
+            const { data, error } = await this.supabase
+                .from('expenses')
+                .select('*')
+                .eq('userId', userId)
+                .order('date', { ascending: false });
+            
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error("[SupabaseStorage] Error getting expenses by user ID:", error);
+            return [];
+        }
+    }
+
+    async getExpensesByTripName(tripName) {
+        try {
+            const { data, error } = await this.supabase
+                .from('expenses')
+                .select('*')
+                .eq('tripName', tripName)
+                .order('date', { ascending: false });
+            
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error("[SupabaseStorage] Error getting expenses by trip name:", error);
+            return [];
+        }
+    }
+
+    async getExpense(id) {
+        try {
+            const { data, error } = await this.supabase
+                .from('expenses')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error getting expense:", error);
+            return null;
+        }
+    }
+
+    async createExpense(expenseData) {
+        try {
+            const { data, error } = await this.supabase
+                .from('expenses')
+                .insert(expenseData)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error creating expense:", error);
+            throw error;
+        }
+    }
+
+    async updateExpense(id, data) {
+        try {
+            const { data: updatedData, error } = await this.supabase
+                .from('expenses')
+                .update(data)
+                .eq('id', id)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return updatedData;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error updating expense:", error);
+            throw error;
+        }
+    }
+
+    async deleteExpense(id) {
+        try {
+            const { error } = await this.supabase
+                .from('expenses')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error deleting expense:", error);
+            throw error;
+        }
+    }
+
+    // Trip methods
+    async getTrips(userId) {
+        try {
+            const { data, error } = await this.supabase
+                .from('trips')
+                .select('*')
+                .eq('userId', userId)
+                .order('startDate', { ascending: false });
+            
+            if (error) throw error;
+            return data || [];
+        } catch (error) {
+            console.error("[SupabaseStorage] Error getting trips:", error);
+            return [];
+        }
+    }
+
+    async getTrip(id) {
+        try {
+            const { data, error } = await this.supabase
+                .from('trips')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error getting trip:", error);
+            return null;
+        }
+    }
+
+    async createTrip(tripData) {
+        try {
+            const { data, error } = await this.supabase
+                .from('trips')
+                .insert(tripData)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error creating trip:", error);
+            throw error;
+        }
+    }
+
+    async updateTrip(id, data) {
+        try {
+            const { data: updatedData, error } = await this.supabase
+                .from('trips')
+                .update(data)
+                .eq('id', id)
+                .select()
+                .single();
+            
+            if (error) throw error;
+            return updatedData;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error updating trip:", error);
+            throw error;
+        }
+    }
+
+    async deleteTrip(id) {
+        try {
+            const { error } = await this.supabase
+                .from('trips')
+                .delete()
+                .eq('id', id);
+            
+            if (error) throw error;
+            return true;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error deleting trip:", error);
+            throw error;
+        }
+    }
+
     // File storage methods
     async uploadFile(filePath, fileBuffer, contentType, bucketName = 'receipts') {
         try {
@@ -111,41 +289,23 @@ class SupabaseStorage {
         }
     }
 
-    // Expense methods
-    async getExpense(id) {
+    // Background task methods
+    async getBackgroundTasksByUserId(userId) {
         try {
             const { data, error } = await this.supabase
-                .from('expenses')
+                .from('background_tasks')
                 .select('*')
-                .eq('id', id)
-                .single();
+                .eq('userId', userId)
+                .order('createdAt', { ascending: false });
             
             if (error) throw error;
-            return data;
+            return data || [];
         } catch (error) {
-            console.error("[SupabaseStorage] Error getting expense:", error);
-            return null;
+            console.error("[SupabaseStorage] Error getting background tasks:", error);
+            return [];
         }
     }
 
-    async updateExpense(id, data) {
-        try {
-            const { data: updatedData, error } = await this.supabase
-                .from('expenses')
-                .update(data)
-                .eq('id', id)
-                .select()
-                .single();
-            
-            if (error) throw error;
-            return updatedData;
-        } catch (error) {
-            console.error("[SupabaseStorage] Error updating expense:", error);
-            throw error;
-        }
-    }
-
-    // Background task methods
     async createBackgroundTask(taskData) {
         try {
             const { data, error } = await this.supabase
@@ -189,22 +349,6 @@ class SupabaseStorage {
         } catch (error) {
             console.error("[SupabaseStorage] Error updating background task status:", error);
             throw error;
-        }
-    }
-
-    async getBackgroundTasksByUserId(userId) {
-        try {
-            const { data, error } = await this.supabase
-                .from('background_tasks')
-                .select('*')
-                .eq('userId', userId)
-                .order('createdAt', { ascending: false });
-            
-            if (error) throw error;
-            return data || [];
-        } catch (error) {
-            console.error("[SupabaseStorage] Error getting background tasks:", error);
-            return [];
         }
     }
 }
