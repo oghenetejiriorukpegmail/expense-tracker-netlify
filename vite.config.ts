@@ -2,6 +2,9 @@ import { defineConfig, loadEnv } from "vite"; // Import loadEnv
 import react from "@vitejs/plugin-react";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+// Remove Replit plugin imports that cause ESM compatibility issues
+// import shadcnThemeJson from "@replit/vite-plugin-shadcn-theme-json";
+// import runtimeErrorModal from "@replit/vite-plugin-runtime-error-modal";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
