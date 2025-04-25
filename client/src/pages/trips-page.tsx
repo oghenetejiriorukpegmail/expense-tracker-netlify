@@ -14,9 +14,15 @@ export default function TripsPage() {
   const { toggleAddTrip } = useModalStore();
   
   // Fetch trips and type the data
-  const { data: trips, isLoading } = useQuery<Trip[]>({ // Add Trip[] type
+  const { data: trips, isLoading } = useQuery<Trip[]>({
     queryKey: ["/api/trips"],
-    // queryFn is default from queryClient
+    queryFn: async () => {
+      const response = await fetch("/api/trips");
+      if (!response.ok) {
+        throw new Error(`Error fetching trips: ${response.statusText}`);
+      }
+      return response.json();
+    }
   });
 
   return (

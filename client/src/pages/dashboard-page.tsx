@@ -21,17 +21,37 @@ export default function DashboardPage() {
   // Fetch profile data
   const { data: profile, isLoading: profileLoading } = useQuery<User>({
     queryKey: ["/api/profile"], // Use the same query key as profile page for caching
-    // queryFn is implicitly handled by the queryClient setup if using default fetcher
+    queryFn: async () => {
+      const response = await fetch("/api/profile");
+      if (!response.ok) {
+        throw new Error(`Error fetching profile: ${response.statusText}`);
+      }
+      return response.json();
+    }
   });
 
   // Fetch expenses and type the data
   const { data: expenses, isLoading: expensesLoading } = useQuery<Expense[]>({
     queryKey: ["/api/expenses"],
+    queryFn: async () => {
+      const response = await fetch("/api/expenses");
+      if (!response.ok) {
+        throw new Error(`Error fetching expenses: ${response.statusText}`);
+      }
+      return response.json();
+    }
   });
 
   // Fetch trips and type the data
   const { data: trips, isLoading: tripsLoading } = useQuery<Trip[]>({
     queryKey: ["/api/trips"],
+    queryFn: async () => {
+      const response = await fetch("/api/trips");
+      if (!response.ok) {
+        throw new Error(`Error fetching trips: ${response.statusText}`);
+      }
+      return response.json();
+    }
   });
 
   // Update isLoading check
