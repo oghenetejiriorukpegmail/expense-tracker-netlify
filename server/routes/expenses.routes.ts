@@ -140,6 +140,28 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
           const task = await storage.createBackgroundTask(taskData);
           console.log(`Created background task ${task.id} for OCR processing of expense ${expense.id}`);
           
+          // Automatically trigger the background processor to process this task
+          try {
+            // Make a request to the background processor endpoint
+            const processorResponse = await fetch(`${req.protocol}://${req.get('host')}/api/background-processor/process-next`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization || '', // Forward the authorization header
+              },
+            });
+            
+            if (processorResponse.ok) {
+              const processorResult = await processorResponse.json();
+              console.log(`Automatically triggered background processor for task ${task.id}:`, processorResult);
+            } else {
+              console.error(`Failed to trigger background processor for task ${task.id}:`, await processorResponse.text());
+            }
+          } catch (processorError) {
+            console.error(`Error triggering background processor for task ${task.id}:`, processorError);
+            // Continue even if the automatic processing fails
+          }
+          
           // Return the expense with the task ID
           res.status(201).json({
             ...expense,
@@ -217,6 +239,52 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
         const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
         supabasePath = uploadResult.path;
         console.log(`Uploaded new receipt for expense ${expenseId} to Supabase: ${supabasePath}`);
+        
+        // Create a background task for OCR processing
+        try {
+          const config = loadConfig();
+          const currentTemplate = config.ocrTemplate || 'general';
+          
+          // Create a background task for OCR processing
+          const taskData = {
+            userId: internalUserId,
+            type: 'receipt_ocr', // Task type for OCR processing
+            status: 'pending',
+            result: JSON.stringify({
+              expenseId: expenseId,
+              receiptPath: supabasePath,
+              template: currentTemplate
+            })
+          };
+          
+          const task = await storage.createBackgroundTask(taskData);
+          console.log(`Created background task ${task.id} for OCR processing of expense ${expenseId}`);
+          
+          // Automatically trigger the background processor to process this task
+          try {
+            // Make a request to the background processor endpoint
+            const processorResponse = await fetch(`${req.protocol}://${req.get('host')}/api/background-processor/process-next`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': req.headers.authorization || '', // Forward the authorization header
+              },
+            });
+            
+            if (processorResponse.ok) {
+              const processorResult = await processorResponse.json();
+              console.log(`Automatically triggered background processor for task ${task.id}:`, processorResult);
+            } else {
+              console.error(`Failed to trigger background processor for task ${task.id}:`, await processorResponse.text());
+            }
+          } catch (processorError) {
+            console.error(`Error triggering background processor for task ${task.id}:`, processorError);
+            // Continue even if the automatic processing fails
+          }
+        } catch (taskError) {
+          console.error(`Failed to create OCR background task for expense ${expenseId}:`, taskError);
+          // Continue even if task creation fails
+        }
       }
 
       // Prepare final update payload, ensuring cost remains string
