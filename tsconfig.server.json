@@ -3,8 +3,8 @@
   "compilerOptions": {
     "noEmit": false, // Allow emitting JS files
     "outDir": "./dist-server", // Specify output directory for server JS files
-    "module": "CommonJS", // Changed to CommonJS for Netlify functions
-    "moduleResolution": "node", // Changed to node for CommonJS
+    "module": "ES2020", // Changed to ES2020 for import.meta support
+    "moduleResolution": "bundler", // Changed to bundler for ES modules
     "target": "ES2020", // Target ES2020 for better compatibility
     "esModuleInterop": true, // Enable interop between CommonJS and ES modules
     "allowSyntheticDefaultImports": true, // Allow default imports from modules with no default export
