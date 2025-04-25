@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createOcrRouter = void 0;
 const express = require("express");
 const multer_config_js_1 = require("../middleware/multer-config.js");
+const ocr_service_js_1 = require("../services/ocr.service.js");
 
 // Create OCR router
 function createOcrRouter(storage) {
@@ -31,7 +32,7 @@ function createOcrRouter(storage) {
             const taskData = {
                 user_id: userId,
                 type: 'receipt_ocr',
-                status: 'pending',
+                status: 'processing',
                 data: JSON.stringify({
                     receipt_path: filePath,
                     mime_type: req.file.mimetype,
@@ -41,25 +42,44 @@ function createOcrRouter(storage) {
             
             const task = await storage.createBackgroundTask(taskData);
             
-            // Process the receipt with OCR
-            // This would normally be done in a background process,
-            // but for immediate feedback we'll do it synchronously here
-            const ocrResult = await processReceiptWithOcr(req.file.buffer, req.file.mimetype);
-            
-            // Update the task with the OCR result
-            await storage.updateBackgroundTaskStatus(
-                task.id,
-                'completed',
-                JSON.stringify(ocrResult)
-            );
-            
-            // Return the OCR result
-            res.json({
-                success: true,
-                task_id: task.id,
-                receipt_path: filePath,
-                ocr_result: ocrResult
-            });
+            try {
+                // Process the receipt with OCR using Google Cloud Vision API
+                const ocrResult = await (0, ocr_service_js_1.processReceiptWithOcr)(req.file.buffer, req.file.mimetype);
+                
+                // Update the task with the OCR result
+                await storage.updateBackgroundTaskStatus(
+                    task.id,
+                    ocrResult.success ? 'completed' : 'failed',
+                    JSON.stringify(ocrResult)
+                );
+                
+                // Return the OCR result
+                res.json({
+                    success: true,
+                    task_id: task.id,
+                    receipt_path: filePath,
+                    ocr_result: ocrResult
+                });
+            } catch (ocrError) {
+                console.error('Error processing receipt with OCR:', ocrError);
+                
+                // Update the task with the error
+                await storage.updateBackgroundTaskStatus(
+                    task.id,
+                    'failed',
+                    null,
+                    ocrError.message || 'Failed to process receipt with OCR'
+                );
+                
+                // Return error response
+                res.status(500).json({ 
+                    success: false,
+                    message: 'Failed to process receipt with OCR',
+                    error: ocrError.message,
+                    task_id: task.id,
+                    receipt_path: filePath
+                });
+            }
         } catch (error) {
             console.error('Error processing receipt with OCR:', error);
             res.status(500).json({ message: 'Failed to process receipt with OCR' });
@@ -106,32 +126,3 @@ function createOcrRouter(storage) {
     return router;
 }
 exports.createOcrRouter = createOcrRouter;
-
-// Process receipt with OCR
-async function processReceiptWithOcr(fileBuffer, mimeType) {
-    try {
-        // In a real implementation, this would call an OCR service like Google Vision API,
-        // Amazon Textract, or a custom OCR service.
-        // For now, we'll return a mock result
-        
-        // Simulate processing delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Return mock OCR result
-        return {
-            vendor: "Sample Vendor",
-            date: new Date().toISOString().split('T')[0],
-            total: "123.45",
-            items: [
-                { description: "Item 1", amount: "50.00" },
-                { description: "Item 2", amount: "73.45" }
-            ],
-            tax: "10.00",
-            currency: "USD",
-            confidence: 0.85
-        };
-    } catch (error) {
-        console.error('Error in OCR processing:', error);
-        throw error;
-    }
-}
