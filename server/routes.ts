@@ -11,6 +11,7 @@ import { createMileageLogRouter } from "./routes/mileage.routes.js";
 import { createSettingsRouter } from "./routes/settings.routes.js";
 import { createBackgroundTaskRouter } from "./routes/tasks.routes.js";
 import { createExportRouter } from "./routes/export.routes.js";
+import { createBackgroundProcessorRouter } from "./routes/background-processor.js";
 
 // Removed old helper functions (generateExcelReport, generateZipArchive)
 // Removed old route registration functions (registerProfileRoutes, etc.)
@@ -49,6 +50,7 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<S
     app.use('/api/settings', authMiddleware as any, createSettingsRouter()); // Settings routes might not need storage
     app.use('/api/background-tasks', authMiddleware as any, createBackgroundTaskRouter(storage));
     app.use('/api/export', authMiddleware as any, createExportRouter(storage)); // Mount export routes under /api/export
+    app.use('/api/background-processor', authMiddleware as any, createBackgroundProcessorRouter(storage)); // Mount background processor routes
     
     console.log("[ROUTES] All API routes mounted successfully");
 

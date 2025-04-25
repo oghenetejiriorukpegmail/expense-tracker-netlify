@@ -5,6 +5,7 @@ import { z } from "zod";
 import Sidebar from "@/components/sidebar";
 import { useSettingsStore, OcrTemplate } from "@/lib/store";
 import { apiRequest } from "@/lib/queryClient";
+import OCRProcessor from "@/components/ocr-processor";
 import {
   Card,
   CardContent,
@@ -359,6 +360,11 @@ export default function SettingsPage() {
               </CardContent>
               <CardFooter className="flex flex-col items-start border-t pt-6 space-y-6">
                  <OcrVerification ocrForm={ocrForm} isSubmitting={isSubmitting} />
+                 
+                 <div className="w-full mt-6">
+                   <h3 className="text-lg font-semibold mb-4">Process Pending OCR Tasks</h3>
+                   <OCRProcessor />
+                 </div>
               </CardFooter>
             </Card>
           </TabsContent>

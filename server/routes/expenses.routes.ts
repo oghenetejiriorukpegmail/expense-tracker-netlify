@@ -115,13 +115,45 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
           userId: internalUserId,
           receiptPath: supabasePath,
           cost: expenseData.cost, // Keep cost as string
-          status: 'pending', // Example default status
+          status: 'pending', // Set status to pending for OCR processing
           // ocrError: null, // Removed this line as it doesn't exist in schema
       };
 
-
+      // Create the expense
       const expense = await storage.createExpense(finalExpenseData);
-      res.status(201).json(expense);
+
+      // If a receipt was uploaded, create a background task for OCR processing
+      if (supabasePath) {
+        try {
+          // Create a background task for OCR processing
+          const taskData = {
+            userId: internalUserId,
+            type: 'receipt_ocr', // Task type for OCR processing
+            status: 'pending',
+            result: JSON.stringify({
+              expenseId: expense.id,
+              receiptPath: supabasePath,
+              template: currentTemplate
+            })
+          };
+          
+          const task = await storage.createBackgroundTask(taskData);
+          console.log(`Created background task ${task.id} for OCR processing of expense ${expense.id}`);
+          
+          // Return the expense with the task ID
+          res.status(201).json({
+            ...expense,
+            ocrTaskId: task.id
+          });
+        } catch (taskError) {
+          console.error(`Failed to create OCR background task for expense ${expense.id}:`, taskError);
+          // Still return the expense even if task creation fails
+          res.status(201).json(expense);
+        }
+      } else {
+        // No receipt, just return the expense
+        res.status(201).json(expense);
+      }
     } catch (error) {
         if (error instanceof z.ZodError) return res.status(400).json({ message: "Validation failed", errors: error.errors });
         next(error);
