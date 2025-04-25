@@ -14,11 +14,39 @@ class SupabaseStorage {
     // User methods
     async getUserByClerkId(clerkId) {
         try {
-            const { data, error } = await this.supabase
+            // Try different possible column names for the Clerk ID
+            // First try 'auth_user_id' (snake_case, common in databases)
+            let { data, error } = await this.supabase
                 .from('users')
                 .select('*')
-                .eq('authUserId', clerkId)
+                .eq('auth_user_id', clerkId)
                 .single();
+            
+            if (error) {
+                console.log("[SupabaseStorage] No match with auth_user_id, trying clerk_id");
+                // Try 'clerk_id' as an alternative
+                const result = await this.supabase
+                    .from('users')
+                    .select('*')
+                    .eq('clerk_id', clerkId)
+                    .single();
+                
+                data = result.data;
+                error = result.error;
+            }
+            
+            if (error) {
+                console.log("[SupabaseStorage] No match with clerk_id, trying user_id");
+                // Try 'user_id' as another alternative
+                const result = await this.supabase
+                    .from('users')
+                    .select('*')
+                    .eq('user_id', clerkId)
+                    .single();
+                
+                data = result.data;
+                error = result.error;
+            }
             
             if (error) throw error;
             return data;
