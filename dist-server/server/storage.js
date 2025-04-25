@@ -342,6 +342,22 @@ class SupabaseStorage {
         }
     }
 
+    async getBackgroundTask(id) {
+        try {
+            const { data, error } = await this.supabase
+                .from('background_tasks')
+                .select('*')
+                .eq('id', id)
+                .single();
+            
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error("[SupabaseStorage] Error getting background task:", error);
+            return null;
+        }
+    }
+
     async createBackgroundTask(taskData) {
         try {
             // Convert camelCase to snake_case for database columns

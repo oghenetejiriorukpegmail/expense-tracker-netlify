@@ -6,11 +6,11 @@ const multer = require("multer");
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
 
-// Create multer instance with memory storage
-exports.upload = multer({
+// Create multer instance with configuration
+const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB file size limit
+        fileSize: 10 * 1024 * 1024, // 10MB max file size
     },
     fileFilter: (req, file, cb) => {
         // Accept images and PDFs
@@ -24,3 +24,5 @@ exports.upload = multer({
         }
     },
 });
+
+exports.upload = upload;
