@@ -1,50 +1,3 @@
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 import express from "express";
 import { z } from "zod";
 import { insertExpenseSchema } from '../../shared/schema.js';
@@ -52,270 +5,322 @@ import { upload } from "../middleware/multer-config.js"; // Add .js extension
 import { v4 as uuidv4 } from "uuid"; // Import uuid
 import { loadConfig } from "../config.js"; // Add .js extension
 export function createExpenseRouter(storage) {
-    var _this = this;
-    var router = express.Router();
+    const router = express.Router();
     // GET /api/expenses
-    router.get("/", function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var authReq, userProfile, internalUserId, tripName, expenses, _a, error_1;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    _b.trys.push([0, 5, , 6]);
-                    authReq = req;
-                    userProfile = authReq.user;
-                    internalUserId = userProfile.id;
-                    tripName = req.query.tripName;
-                    if (!tripName) return [3 /*break*/, 2];
-                    return [4 /*yield*/, storage.getExpensesByTripName(internalUserId, tripName)];
-                case 1:
-                    _a = _b.sent();
-                    return [3 /*break*/, 4];
-                case 2: return [4 /*yield*/, storage.getExpensesByUserId(internalUserId)];
-                case 3:
-                    _a = _b.sent();
-                    _b.label = 4;
-                case 4:
-                    expenses = _a;
-                    res.json(expenses);
-                    return [3 /*break*/, 6];
-                case 5:
-                    error_1 = _b.sent();
-                    next(error_1);
-                    return [3 /*break*/, 6];
-                case 6: return [2 /*return*/];
-            }
-        });
-    }); });
+    router.get("/", async (req, res, next) => {
+        try {
+            // Cast the request to our authenticated request type
+            const authReq = req;
+            const userProfile = authReq.user;
+            const internalUserId = userProfile.id;
+            const tripName = req.query.tripName;
+            const expenses = tripName
+                ? await storage.getExpensesByTripName(internalUserId, tripName)
+                : await storage.getExpensesByUserId(internalUserId);
+            res.json(expenses);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
     // GET /api/expenses/:id
-    router.get("/:id", function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var authReq, userProfile, internalUserId, expenseId, expense, error_2;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    authReq = req;
-                    userProfile = authReq.user;
-                    internalUserId = userProfile.id;
-                    expenseId = parseInt(req.params.id);
-                    if (isNaN(expenseId))
-                        return [2 /*return*/, res.status(400).send("Invalid expense ID")];
-                    return [4 /*yield*/, storage.getExpense(expenseId)];
-                case 1:
-                    expense = _a.sent();
-                    if (!expense)
-                        return [2 /*return*/, res.status(404).send("Expense not found")];
-                    if (expense.userId !== internalUserId)
-                        return [2 /*return*/, res.status(403).send("Forbidden")];
-                    res.json(expense);
-                    return [3 /*break*/, 3];
-                case 2:
-                    error_2 = _a.sent();
-                    next(error_2);
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/];
-            }
-        });
-    }); });
+    router.get("/:id", async (req, res, next) => {
+        try {
+            // Cast the request to our authenticated request type
+            const authReq = req;
+            const userProfile = authReq.user;
+            const internalUserId = userProfile.id;
+            const expenseId = parseInt(req.params.id);
+            if (isNaN(expenseId))
+                return res.status(400).send("Invalid expense ID");
+            const expense = await storage.getExpense(expenseId);
+            if (!expense)
+                return res.status(404).send("Expense not found");
+            if (expense.userId !== internalUserId)
+                return res.status(403).send("Forbidden");
+            res.json(expense);
+        }
+        catch (error) {
+            next(error);
+        }
+    });
     // POST /api/expenses
-    router.post("/", upload.single("receipt"), function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var authReq, userProfile, internalUserId, config, currentTemplate, baseExpenseSchema, parsedBody, expenseData, supabasePath, uniquePath, uploadResult, finalExpenseData, expense, error_3;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 4, , 5]);
-                    authReq = req;
-                    userProfile = authReq.user;
-                    internalUserId = userProfile.id;
-                    config = loadConfig();
-                    currentTemplate = config.ocrTemplate || 'general';
-                    baseExpenseSchema = z.object({
-                        date: z.string(),
-                        cost: z.union([z.string(), z.number()]),
-                        tripName: z.string(),
-                        comments: z.string().optional(),
-                        type: z.string().optional(),
-                        description: z.string().optional(), // Added description
-                        vendor: z.string().optional(),
-                        location: z.string().optional(),
-                    });
-                    parsedBody = baseExpenseSchema.parse(req.body);
-                    expenseData = {
-                        date: parsedBody.date,
-                        cost: String(parsedBody.cost), // Keep cost as string
-                        tripName: parsedBody.tripName,
-                        comments: parsedBody.comments || '',
-                        type: '', // Initialize
-                        vendor: '', // Initialize
-                        location: '', // Initialize
+    router.post("/", upload.single("receipt"), async (req, res, next) => {
+        try {
+            // Cast the request to our authenticated request type
+            const authReq = req;
+            const userProfile = authReq.user;
+            const internalUserId = userProfile.id;
+            const config = loadConfig();
+            const currentTemplate = config.ocrTemplate || 'general';
+            // Validate required fields from the body first
+            // Add description to the base schema
+            const baseExpenseSchema = z.object({
+                date: z.string(),
+                cost: z.union([z.string(), z.number()]),
+                tripName: z.string(),
+                comments: z.string().optional(),
+                type: z.string().optional(),
+                description: z.string().optional(), // Added description
+                vendor: z.string().optional(),
+                location: z.string().optional(),
+            });
+            const parsedBody = baseExpenseSchema.parse(req.body);
+            // Construct the expense data ensuring all required fields for InsertExpense are present
+            // Ensure cost remains string as expected by schema
+            let expenseData = {
+                date: parsedBody.date,
+                cost: String(parsedBody.cost), // Keep cost as string
+                tripName: parsedBody.tripName,
+                comments: parsedBody.comments || '',
+                type: '', // Initialize
+                vendor: '', // Initialize
+                location: '', // Initialize
+            };
+            if (currentTemplate === 'travel') {
+                expenseData.type = parsedBody.type || parsedBody.description || 'Travel Expense';
+                if (parsedBody.description && (!expenseData.comments || expenseData.comments.trim() === ''))
+                    expenseData.comments = parsedBody.description;
+                else if (parsedBody.description)
+                    expenseData.comments = `${parsedBody.description}\n\n${expenseData.comments}`;
+                expenseData.vendor = parsedBody.vendor || 'Travel Vendor';
+                expenseData.location = parsedBody.location || 'Travel Location';
+            }
+            else {
+                expenseData.type = parsedBody.type || 'General Expense';
+                expenseData.vendor = parsedBody.vendor || 'Unknown Vendor';
+                expenseData.location = parsedBody.location || 'Unknown Location';
+            }
+            let supabasePath = null;
+            if (authReq.file) { // Use authReq.file
+                const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
+                const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
+                supabasePath = uploadResult.path;
+                console.log(`Uploaded receipt for new expense to Supabase: ${supabasePath}`);
+            }
+            // Ensure the final object matches InsertExpense & { userId: number, receiptPath?: string | null }
+            const finalExpenseData = {
+                ...expenseData,
+                userId: internalUserId,
+                receiptPath: supabasePath,
+                cost: expenseData.cost, // Keep cost as string
+                status: 'pending', // Set status to pending for OCR processing
+                // ocrError: null, // Removed this line as it doesn't exist in schema
+            };
+            // Create the expense
+            const expense = await storage.createExpense(finalExpenseData);
+            // If a receipt was uploaded, create a background task for OCR processing
+            if (supabasePath) {
+                try {
+                    // Create a background task for OCR processing
+                    const taskData = {
+                        userId: internalUserId,
+                        type: 'receipt_ocr', // Task type for OCR processing
+                        status: 'pending',
+                        result: JSON.stringify({
+                            expenseId: expense.id,
+                            receiptPath: supabasePath,
+                            template: currentTemplate
+                        })
                     };
-                    if (currentTemplate === 'travel') {
-                        expenseData.type = parsedBody.type || parsedBody.description || 'Travel Expense';
-                        if (parsedBody.description && (!expenseData.comments || expenseData.comments.trim() === ''))
-                            expenseData.comments = parsedBody.description;
-                        else if (parsedBody.description)
-                            expenseData.comments = "".concat(parsedBody.description, "\n\n").concat(expenseData.comments);
-                        expenseData.vendor = parsedBody.vendor || 'Travel Vendor';
-                        expenseData.location = parsedBody.location || 'Travel Location';
+                    const task = await storage.createBackgroundTask(taskData);
+                    console.log(`Created background task ${task.id} for OCR processing of expense ${expense.id}`);
+                    // Automatically trigger the background processor to process this task
+                    try {
+                        // Make a request to the background processor endpoint
+                        const processorResponse = await fetch(`${req.protocol}://${req.get('host')}/api/background-processor/process-next`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': req.headers.authorization || '', // Forward the authorization header
+                            },
+                        });
+                        if (processorResponse.ok) {
+                            const processorResult = await processorResponse.json();
+                            console.log(`Automatically triggered background processor for task ${task.id}:`, processorResult);
+                        }
+                        else {
+                            console.error(`Failed to trigger background processor for task ${task.id}:`, await processorResponse.text());
+                        }
                     }
-                    else {
-                        expenseData.type = parsedBody.type || 'General Expense';
-                        expenseData.vendor = parsedBody.vendor || 'Unknown Vendor';
-                        expenseData.location = parsedBody.location || 'Unknown Location';
+                    catch (processorError) {
+                        console.error(`Error triggering background processor for task ${task.id}:`, processorError);
+                        // Continue even if the automatic processing fails
                     }
-                    supabasePath = null;
-                    if (!authReq.file) return [3 /*break*/, 2];
-                    uniquePath = "receipts/".concat(internalUserId, "/").concat(uuidv4(), "-").concat(authReq.file.originalname);
-                    return [4 /*yield*/, storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype)];
-                case 1:
-                    uploadResult = _a.sent();
-                    supabasePath = uploadResult.path;
-                    console.log("Uploaded receipt for new expense to Supabase: ".concat(supabasePath));
-                    _a.label = 2;
-                case 2:
-                    finalExpenseData = __assign(__assign({}, expenseData), { userId: internalUserId, receiptPath: supabasePath, cost: expenseData.cost, status: 'pending' });
-                    return [4 /*yield*/, storage.createExpense(finalExpenseData)];
-                case 3:
-                    expense = _a.sent();
-                    res.status(201).json(expense);
-                    return [3 /*break*/, 5];
-                case 4:
-                    error_3 = _a.sent();
-                    if (error_3 instanceof z.ZodError)
-                        return [2 /*return*/, res.status(400).json({ message: "Validation failed", errors: error_3.errors })];
-                    next(error_3);
-                    return [3 /*break*/, 5];
-                case 5: return [2 /*return*/];
-            }
-        });
-    }); });
-    // PUT /api/expenses/:id
-    router.put("/:id", upload.single("receipt"), function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var authReq, userProfile, internalUserId, expenseId, expense, updateExpenseSchema, parsedBody, config, currentTemplate, expenseData, supabasePath, uniquePath, uploadResult, finalUpdatePayload, updatedExpense, error_4;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 7, , 8]);
-                    authReq = req;
-                    userProfile = authReq.user;
-                    internalUserId = userProfile.id;
-                    expenseId = parseInt(req.params.id);
-                    if (isNaN(expenseId))
-                        return [2 /*return*/, res.status(400).send("Invalid expense ID")];
-                    return [4 /*yield*/, storage.getExpense(expenseId)];
-                case 1:
-                    expense = _a.sent();
-                    if (!expense)
-                        return [2 /*return*/, res.status(404).send("Expense not found")];
-                    if (expense.userId !== internalUserId)
-                        return [2 /*return*/, res.status(403).send("Forbidden")];
-                    updateExpenseSchema = insertExpenseSchema.partial().extend({
-                        description: z.string().optional() // Add optional description
+                    // Return the expense with the task ID
+                    res.status(201).json({
+                        ...expense,
+                        ocrTaskId: task.id
                     });
-                    parsedBody = updateExpenseSchema.parse(req.body);
-                    config = loadConfig();
-                    currentTemplate = config.ocrTemplate || 'general';
-                    expenseData = {};
-                    if (parsedBody.date !== undefined)
-                        expenseData.date = parsedBody.date;
-                    if (parsedBody.cost !== undefined)
-                        expenseData.cost = String(parsedBody.cost); // Keep cost as string
-                    if (parsedBody.tripName !== undefined)
-                        expenseData.tripName = parsedBody.tripName;
-                    if (parsedBody.comments !== undefined)
-                        expenseData.comments = parsedBody.comments || '';
-                    // Handle template-specific fields based on presence in parsedBody
-                    if (currentTemplate === 'travel') {
-                        if (parsedBody.type !== undefined)
-                            expenseData.type = parsedBody.type || parsedBody.description || 'Travel Expense';
-                        if (parsedBody.description && (!expenseData.comments || expenseData.comments.trim() === ''))
-                            expenseData.comments = parsedBody.description;
-                        else if (parsedBody.description)
-                            expenseData.comments = "".concat(parsedBody.description, "\n\n").concat(expenseData.comments);
-                        if (parsedBody.vendor !== undefined)
-                            expenseData.vendor = parsedBody.vendor || 'Travel Vendor';
-                        if (parsedBody.location !== undefined)
-                            expenseData.location = parsedBody.location || 'Travel Location';
-                    }
-                    else {
-                        if (parsedBody.type !== undefined)
-                            expenseData.type = parsedBody.type || 'General Expense';
-                        if (parsedBody.vendor !== undefined)
-                            expenseData.vendor = parsedBody.vendor || 'Unknown Vendor';
-                        if (parsedBody.location !== undefined)
-                            expenseData.location = parsedBody.location || 'Unknown Location';
-                    }
-                    supabasePath = expense.receiptPath;
-                    if (!authReq.file) return [3 /*break*/, 5];
-                    if (!expense.receiptPath) return [3 /*break*/, 3];
-                    console.log("Deleting old receipt ".concat(expense.receiptPath, " from Supabase."));
-                    return [4 /*yield*/, storage.deleteFile(expense.receiptPath).catch(function (e) { return console.error("Failed to delete old Supabase receipt:", e); })];
-                case 2:
-                    _a.sent(); // Add type to catch
-                    _a.label = 3;
-                case 3:
-                    uniquePath = "receipts/".concat(internalUserId, "/").concat(uuidv4(), "-").concat(authReq.file.originalname);
-                    return [4 /*yield*/, storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype)];
-                case 4:
-                    uploadResult = _a.sent();
-                    supabasePath = uploadResult.path;
-                    console.log("Uploaded new receipt for expense ".concat(expenseId, " to Supabase: ").concat(supabasePath));
-                    _a.label = 5;
-                case 5:
-                    finalUpdatePayload = __assign(__assign({}, expenseData), { receiptPath: supabasePath, cost: expenseData.cost });
-                    return [4 /*yield*/, storage.updateExpense(expenseId, finalUpdatePayload)];
-                case 6:
-                    updatedExpense = _a.sent();
-                    res.json(updatedExpense);
-                    return [3 /*break*/, 8];
-                case 7:
-                    error_4 = _a.sent();
-                    if (error_4 instanceof z.ZodError)
-                        return [2 /*return*/, res.status(400).json({ message: "Validation failed", errors: error_4.errors })];
-                    next(error_4);
-                    return [3 /*break*/, 8];
-                case 8: return [2 /*return*/];
+                }
+                catch (taskError) {
+                    console.error(`Failed to create OCR background task for expense ${expense.id}:`, taskError);
+                    // Still return the expense even if task creation fails
+                    res.status(201).json(expense);
+                }
             }
-        });
-    }); });
+            else {
+                // No receipt, just return the expense
+                res.status(201).json(expense);
+            }
+        }
+        catch (error) {
+            if (error instanceof z.ZodError)
+                return res.status(400).json({ message: "Validation failed", errors: error.errors });
+            next(error);
+        }
+    });
+    // PUT /api/expenses/:id
+    router.put("/:id", upload.single("receipt"), async (req, res, next) => {
+        try {
+            // Cast the request to our authenticated request type
+            const authReq = req;
+            const userProfile = authReq.user;
+            const internalUserId = userProfile.id;
+            const expenseId = parseInt(req.params.id);
+            if (isNaN(expenseId))
+                return res.status(400).send("Invalid expense ID");
+            const expense = await storage.getExpense(expenseId);
+            if (!expense)
+                return res.status(404).send("Expense not found");
+            if (expense.userId !== internalUserId)
+                return res.status(403).send("Forbidden");
+            // Validate incoming data (use partial schema for updates)
+            // Add description to the update schema
+            const updateExpenseSchema = insertExpenseSchema.partial().extend({
+                description: z.string().optional() // Add optional description
+            });
+            const parsedBody = updateExpenseSchema.parse(req.body);
+            const config = loadConfig();
+            const currentTemplate = config.ocrTemplate || 'general';
+            // Prepare data for update, only include fields present in parsedBody
+            // Ensure cost remains string
+            let expenseData = {};
+            if (parsedBody.date !== undefined)
+                expenseData.date = parsedBody.date;
+            if (parsedBody.cost !== undefined)
+                expenseData.cost = String(parsedBody.cost); // Keep cost as string
+            if (parsedBody.tripName !== undefined)
+                expenseData.tripName = parsedBody.tripName;
+            if (parsedBody.comments !== undefined)
+                expenseData.comments = parsedBody.comments || '';
+            // Handle template-specific fields based on presence in parsedBody
+            if (currentTemplate === 'travel') {
+                if (parsedBody.type !== undefined)
+                    expenseData.type = parsedBody.type || parsedBody.description || 'Travel Expense';
+                if (parsedBody.description && (!expenseData.comments || expenseData.comments.trim() === ''))
+                    expenseData.comments = parsedBody.description;
+                else if (parsedBody.description)
+                    expenseData.comments = `${parsedBody.description}\n\n${expenseData.comments}`;
+                if (parsedBody.vendor !== undefined)
+                    expenseData.vendor = parsedBody.vendor || 'Travel Vendor';
+                if (parsedBody.location !== undefined)
+                    expenseData.location = parsedBody.location || 'Travel Location';
+            }
+            else {
+                if (parsedBody.type !== undefined)
+                    expenseData.type = parsedBody.type || 'General Expense';
+                if (parsedBody.vendor !== undefined)
+                    expenseData.vendor = parsedBody.vendor || 'Unknown Vendor';
+                if (parsedBody.location !== undefined)
+                    expenseData.location = parsedBody.location || 'Unknown Location';
+            }
+            let supabasePath = expense.receiptPath;
+            if (authReq.file) { // Use authReq.file
+                if (expense.receiptPath) {
+                    console.log(`Deleting old receipt ${expense.receiptPath} from Supabase.`);
+                    await storage.deleteFile(expense.receiptPath).catch((e) => console.error("Failed to delete old Supabase receipt:", e)); // Add type to catch
+                }
+                const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
+                const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
+                supabasePath = uploadResult.path;
+                console.log(`Uploaded new receipt for expense ${expenseId} to Supabase: ${supabasePath}`);
+                // Create a background task for OCR processing
+                try {
+                    const config = loadConfig();
+                    const currentTemplate = config.ocrTemplate || 'general';
+                    // Create a background task for OCR processing
+                    const taskData = {
+                        userId: internalUserId,
+                        type: 'receipt_ocr', // Task type for OCR processing
+                        status: 'pending',
+                        result: JSON.stringify({
+                            expenseId: expenseId,
+                            receiptPath: supabasePath,
+                            template: currentTemplate
+                        })
+                    };
+                    const task = await storage.createBackgroundTask(taskData);
+                    console.log(`Created background task ${task.id} for OCR processing of expense ${expenseId}`);
+                    // Automatically trigger the background processor to process this task
+                    try {
+                        // Make a request to the background processor endpoint
+                        const processorResponse = await fetch(`${req.protocol}://${req.get('host')}/api/background-processor/process-next`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': req.headers.authorization || '', // Forward the authorization header
+                            },
+                        });
+                        if (processorResponse.ok) {
+                            const processorResult = await processorResponse.json();
+                            console.log(`Automatically triggered background processor for task ${task.id}:`, processorResult);
+                        }
+                        else {
+                            console.error(`Failed to trigger background processor for task ${task.id}:`, await processorResponse.text());
+                        }
+                    }
+                    catch (processorError) {
+                        console.error(`Error triggering background processor for task ${task.id}:`, processorError);
+                        // Continue even if the automatic processing fails
+                    }
+                }
+                catch (taskError) {
+                    console.error(`Failed to create OCR background task for expense ${expenseId}:`, taskError);
+                    // Continue even if task creation fails
+                }
+            }
+            // Prepare final update payload, ensuring cost remains string
+            const finalUpdatePayload = {
+                ...expenseData,
+                receiptPath: supabasePath,
+                cost: expenseData.cost, // Keep cost as string
+            };
+            const updatedExpense = await storage.updateExpense(expenseId, finalUpdatePayload);
+            res.json(updatedExpense);
+        }
+        catch (error) {
+            if (error instanceof z.ZodError)
+                return res.status(400).json({ message: "Validation failed", errors: error.errors });
+            next(error);
+        }
+    });
     // DELETE /api/expenses/:id
-    router.delete("/:id", function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var authReq, userProfile, internalUserId, expenseId, expense, error_5;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 5, , 6]);
-                    authReq = req;
-                    userProfile = authReq.user;
-                    internalUserId = userProfile.id;
-                    expenseId = parseInt(req.params.id);
-                    if (isNaN(expenseId))
-                        return [2 /*return*/, res.status(400).send("Invalid expense ID")];
-                    return [4 /*yield*/, storage.getExpense(expenseId)];
-                case 1:
-                    expense = _a.sent();
-                    if (!expense)
-                        return [2 /*return*/, res.status(404).send("Expense not found")];
-                    if (expense.userId !== internalUserId)
-                        return [2 /*return*/, res.status(403).send("Forbidden")];
-                    if (!expense.receiptPath) return [3 /*break*/, 3];
-                    console.log("Deleting receipt ".concat(expense.receiptPath, " from Supabase for expense ").concat(expenseId, "."));
-                    return [4 /*yield*/, storage.deleteFile(expense.receiptPath).catch(function (e) { return console.error("Failed to delete Supabase receipt:", e); })];
-                case 2:
-                    _a.sent(); // Add type to catch
-                    _a.label = 3;
-                case 3: return [4 /*yield*/, storage.deleteExpense(expenseId)];
-                case 4:
-                    _a.sent();
-                    res.status(204).send();
-                    return [3 /*break*/, 6];
-                case 5:
-                    error_5 = _a.sent();
-                    next(error_5);
-                    return [3 /*break*/, 6];
-                case 6: return [2 /*return*/];
+    router.delete("/:id", async (req, res, next) => {
+        try {
+            // Cast the request to our authenticated request type
+            const authReq = req;
+            const userProfile = authReq.user;
+            const internalUserId = userProfile.id;
+            const expenseId = parseInt(req.params.id);
+            if (isNaN(expenseId))
+                return res.status(400).send("Invalid expense ID");
+            const expense = await storage.getExpense(expenseId);
+            if (!expense)
+                return res.status(404).send("Expense not found");
+            if (expense.userId !== internalUserId)
+                return res.status(403).send("Forbidden");
+            if (expense.receiptPath) {
+                console.log(`Deleting receipt ${expense.receiptPath} from Supabase for expense ${expenseId}.`);
+                await storage.deleteFile(expense.receiptPath).catch((e) => console.error("Failed to delete Supabase receipt:", e)); // Add type to catch
             }
-        });
-    }); });
+            await storage.deleteExpense(expenseId);
+            res.status(204).send();
+        }
+        catch (error) {
+            next(error);
+        }
+    });
     // Removed /api/expenses/process-ocr route (handled by background function)
     // Removed /api/expenses/batch-upload-trigger route (handled by background function)
     return router;

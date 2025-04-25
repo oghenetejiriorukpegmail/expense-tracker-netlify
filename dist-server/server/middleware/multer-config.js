@@ -1,22 +1,26 @@
-import multer from "multer";
-// Configure storage
-// Use memory storage to handle files as buffers
-var storage = multer.memoryStorage();
-// File filter to only accept images and PDFs
-var fileFilter = function (_req, file, cb) {
-    var allowedMimeTypes = ["image/jpeg", "image/png", "image/gif", "application/pdf"];
-    if (allowedMimeTypes.includes(file.mimetype)) {
-        cb(null, true);
-    }
-    else {
-        cb(new Error("Invalid file type. Only JPG, PNG, GIF, and PDF files are allowed."), false);
-    }
-};
-// Configure multer
-export var upload = multer({
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.upload = void 0;
+const multer = require("multer");
+
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
+
+// Create multer instance with memory storage
+exports.upload = multer({
     storage: storage,
-    fileFilter: fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB limit
+        fileSize: 10 * 1024 * 1024, // 10MB file size limit
+    },
+    fileFilter: (req, file, cb) => {
+        // Accept images and PDFs
+        if (
+            file.mimetype.startsWith('image/') ||
+            file.mimetype === 'application/pdf'
+        ) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only images and PDF files are allowed'));
+        }
     },
 });
