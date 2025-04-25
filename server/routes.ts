@@ -12,6 +12,7 @@ import { createSettingsRouter } from "./routes/settings.routes.js";
 import { createBackgroundTaskRouter } from "./routes/tasks.routes.js";
 import { createExportRouter } from "./routes/export.routes.js";
 import { createBackgroundProcessorRouter } from "./routes/background-processor.js";
+import { createOcrRouter } from "./routes/ocr.routes.js";
 
 // Removed old helper functions (generateExcelReport, generateZipArchive)
 // Removed old route registration functions (registerProfileRoutes, etc.)
@@ -51,6 +52,7 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<S
     app.use('/api/background-tasks', authMiddleware as any, createBackgroundTaskRouter(storage));
     app.use('/api/export', authMiddleware as any, createExportRouter(storage)); // Mount export routes under /api/export
     app.use('/api/background-processor', authMiddleware as any, createBackgroundProcessorRouter(storage)); // Mount background processor routes
+    app.use('/api/ocr', authMiddleware as any, createOcrRouter(storage)); // Mount OCR routes
     
     console.log("[ROUTES] All API routes mounted successfully");
 
