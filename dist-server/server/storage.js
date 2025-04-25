@@ -193,9 +193,10 @@ async function initializeStorage() {
         
         const storage = new SupabaseStorage(supabaseUrl, supabaseKey);
         
-        // Test database connection
+        // Test database connection - using a simple query instead of count()
         try {
-            const { data, error } = await storage.supabase.from('users').select('count()', { count: 'exact' }).limit(1);
+            // Just fetch a single user to test the connection
+            const { data, error } = await storage.supabase.from('users').select('id').limit(1);
             if (error) throw error;
             console.log("[SupabaseStorage] Successfully connected to Supabase database.");
         } catch (error) {
