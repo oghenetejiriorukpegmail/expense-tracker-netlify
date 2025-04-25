@@ -59,10 +59,11 @@ class SupabaseStorage {
     // Expense methods
     async getExpensesByUserId(userId) {
         try {
+            // Use snake_case for column names in the database
             const { data, error } = await this.supabase
                 .from('expenses')
                 .select('*')
-                .eq('userId', userId)
+                .eq('user_id', userId)
                 .order('date', { ascending: false });
             
             if (error) throw error;
@@ -75,10 +76,11 @@ class SupabaseStorage {
 
     async getExpensesByTripName(tripName) {
         try {
+            // Use snake_case for column names in the database
             const { data, error } = await this.supabase
                 .from('expenses')
                 .select('*')
-                .eq('tripName', tripName)
+                .eq('trip_name', tripName)
                 .order('date', { ascending: false });
             
             if (error) throw error;
@@ -107,9 +109,17 @@ class SupabaseStorage {
 
     async createExpense(expenseData) {
         try {
+            // Convert camelCase to snake_case for database columns
+            const dbData = {};
+            for (const [key, value] of Object.entries(expenseData)) {
+                // Convert camelCase to snake_case
+                const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+                dbData[snakeKey] = value;
+            }
+            
             const { data, error } = await this.supabase
                 .from('expenses')
-                .insert(expenseData)
+                .insert(dbData)
                 .select()
                 .single();
             
@@ -121,17 +131,25 @@ class SupabaseStorage {
         }
     }
 
-    async updateExpense(id, data) {
+    async updateExpense(id, expenseData) {
         try {
-            const { data: updatedData, error } = await this.supabase
+            // Convert camelCase to snake_case for database columns
+            const dbData = {};
+            for (const [key, value] of Object.entries(expenseData)) {
+                // Convert camelCase to snake_case
+                const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+                dbData[snakeKey] = value;
+            }
+            
+            const { data, error } = await this.supabase
                 .from('expenses')
-                .update(data)
+                .update(dbData)
                 .eq('id', id)
                 .select()
                 .single();
             
             if (error) throw error;
-            return updatedData;
+            return data;
         } catch (error) {
             console.error("[SupabaseStorage] Error updating expense:", error);
             throw error;
@@ -156,11 +174,12 @@ class SupabaseStorage {
     // Trip methods
     async getTrips(userId) {
         try {
+            // Use snake_case for column names in the database
             const { data, error } = await this.supabase
                 .from('trips')
                 .select('*')
-                .eq('userId', userId)
-                .order('startDate', { ascending: false });
+                .eq('user_id', userId)
+                .order('start_date', { ascending: false });
             
             if (error) throw error;
             return data || [];
@@ -188,9 +207,17 @@ class SupabaseStorage {
 
     async createTrip(tripData) {
         try {
+            // Convert camelCase to snake_case for database columns
+            const dbData = {};
+            for (const [key, value] of Object.entries(tripData)) {
+                // Convert camelCase to snake_case
+                const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+                dbData[snakeKey] = value;
+            }
+            
             const { data, error } = await this.supabase
                 .from('trips')
-                .insert(tripData)
+                .insert(dbData)
                 .select()
                 .single();
             
@@ -202,17 +229,25 @@ class SupabaseStorage {
         }
     }
 
-    async updateTrip(id, data) {
+    async updateTrip(id, tripData) {
         try {
-            const { data: updatedData, error } = await this.supabase
+            // Convert camelCase to snake_case for database columns
+            const dbData = {};
+            for (const [key, value] of Object.entries(tripData)) {
+                // Convert camelCase to snake_case
+                const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+                dbData[snakeKey] = value;
+            }
+            
+            const { data, error } = await this.supabase
                 .from('trips')
-                .update(data)
+                .update(dbData)
                 .eq('id', id)
                 .select()
                 .single();
             
             if (error) throw error;
-            return updatedData;
+            return data;
         } catch (error) {
             console.error("[SupabaseStorage] Error updating trip:", error);
             throw error;
@@ -292,11 +327,12 @@ class SupabaseStorage {
     // Background task methods
     async getBackgroundTasksByUserId(userId) {
         try {
+            // Use snake_case for column names in the database
             const { data, error } = await this.supabase
                 .from('background_tasks')
                 .select('*')
-                .eq('userId', userId)
-                .order('createdAt', { ascending: false });
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
             
             if (error) throw error;
             return data || [];
@@ -308,9 +344,17 @@ class SupabaseStorage {
 
     async createBackgroundTask(taskData) {
         try {
+            // Convert camelCase to snake_case for database columns
+            const dbData = {};
+            for (const [key, value] of Object.entries(taskData)) {
+                // Convert camelCase to snake_case
+                const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+                dbData[snakeKey] = value;
+            }
+            
             const { data, error } = await this.supabase
                 .from('background_tasks')
-                .insert(taskData)
+                .insert(dbData)
                 .select()
                 .single();
             
@@ -324,9 +368,10 @@ class SupabaseStorage {
 
     async updateBackgroundTaskStatus(id, status, result = null, error = null) {
         try {
+            // Use snake_case for database columns
             const updateData = {
                 status,
-                updatedAt: new Date().toISOString()
+                updated_at: new Date().toISOString()
             };
             
             if (result !== null) {
