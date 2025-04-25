@@ -270,7 +270,7 @@ class SupabaseStorage {
     }
 
     // File storage methods
-    async uploadFile(filePath, fileBuffer, contentType, bucketName = 'receipts') {
+    async uploadFile(filePath, fileBuffer, contentType, bucketName = 'expenses-receipts') {
         try {
             const { data, error } = await this.supabase.storage
                 .from(bucketName)
@@ -291,7 +291,7 @@ class SupabaseStorage {
         }
     }
 
-    async downloadFile(path, bucketName = 'receipts') {
+    async downloadFile(path, bucketName = 'expenses-receipts') {
         try {
             const { data, error } = await this.supabase.storage
                 .from(bucketName)
@@ -309,7 +309,7 @@ class SupabaseStorage {
         }
     }
 
-    async deleteFile(path, bucketName = 'receipts') {
+    async deleteFile(path, bucketName = 'expenses-receipts') {
         try {
             const { error } = await this.supabase.storage
                 .from(bucketName)

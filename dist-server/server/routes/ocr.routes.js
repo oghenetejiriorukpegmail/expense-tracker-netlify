@@ -19,7 +19,8 @@ function createOcrRouter(storage) {
             const userId = req.user.id;
             const timestamp = Date.now();
             const filename = `${userId}_${timestamp}_${req.file.originalname}`;
-            const filePath = `receipts/${userId}/${filename}`;
+            // Update the file path to match the bucket structure
+            const filePath = `${userId}/${filename}`;
             
             // Upload file to storage
             const uploadResult = await storage.uploadFile(
