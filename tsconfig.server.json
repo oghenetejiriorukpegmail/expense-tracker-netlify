@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json", // Inherit base settings
+  "compilerOptions": {
+    "noEmit": false, // Allow emitting JS files
+    "outDir": "./dist-server", // Specify output directory for server JS files
+    "module": "ES2020", // Changed to ES2020 for import.meta support
+    "moduleResolution": "bundler", // Changed to bundler for ES modules
+    "target": "ES2020", // Target ES2020 for better compatibility
+    "esModuleInterop": true, // Enable interop between CommonJS and ES modules
+    "allowSyntheticDefaultImports": true, // Allow default imports from modules with no default export
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "noImplicitAny": false, // Disable strict type checking for any
+    "strictNullChecks": false, // Disable strict null checks
+    "strict": false, // Disable all strict type checking
+    "allowImportingTsExtensions": false, // Must be false when noEmit is false
+    "jsx": "react-jsx", // Adjust if server uses JSX differently or not at all
+    "types": ["node"], // Use Node types for server
+    "baseUrl": ".", // Explicitly set baseUrl
+    "paths": {
+      "@/*": ["./client/src/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  },
+  "include": ["server/**/*", "shared/**/*"], // Only include server and shared code
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts", "client/**/*"] // Exclude client code
+}

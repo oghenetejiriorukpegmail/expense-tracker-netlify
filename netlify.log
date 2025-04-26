@@ -1,0 +1,105 @@
+Apr 22, 01:41:58 PM: 53c6497d ERROR  Auth Middleware Catch Error: TypeError: Cannot convert undefined or null to object
+    at Function.entries (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:17)
+    at /var/task/netlify/functions/api.js:181102:22
+    at Array.reduce (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:33)
+    at /var/task/netlify/functions/api.js:184962:26
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase._prepare (/var/task/netlify/functions/api.js:184961:19)
+    at /var/task/netlify/functions/api.js:184986:19
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase.execute (/var/task/netlify/functions/api.js:184985:19)
+    at PgSelectBase.then (/var/task/netlify/functions/api.js:182448:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Apr 22, 01:41:58 PM: 53c6497d INFO   GET /api/trips 500 in 197ms :: {"message":"Internal Server Error during authenti…
+Apr 22, 01:41:58 PM: 53c6497d Duration: 204.46 ms	Memory Usage: 159 MB
+Apr 22, 01:41:58 PM: e6609444 ERROR  Auth Middleware Catch Error: TypeError: Cannot convert undefined or null to object
+    at Function.entries (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:17)
+    at /var/task/netlify/functions/api.js:181102:22
+    at Array.reduce (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:33)
+    at /var/task/netlify/functions/api.js:184962:26
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase._prepare (/var/task/netlify/functions/api.js:184961:19)
+    at /var/task/netlify/functions/api.js:184986:19
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase.execute (/var/task/netlify/functions/api.js:184985:19)
+    at PgSelectBase.then (/var/task/netlify/functions/api.js:182448:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Apr 22, 01:41:58 PM: e6609444 INFO   GET /api/profile 500 in 194ms :: {"message":"Internal Server Error during authenti…
+Apr 22, 01:41:58 PM: e6609444 Duration: 296.39 ms	Memory Usage: 146 MB
+Apr 22, 01:41:59 PM: INFO   Supabase client initialized for URL: https://wrahnhyytxtddwngwnvf.supabase.co
+Apr 22, 01:41:59 PM: INFO   Testing database connection...
+Apr 22, 01:41:59 PM: ERROR  (node:9) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Apr 22, 01:41:59 PM: 6906e22d INFO   Successfully connected to Supabase database.
+Apr 22, 01:41:59 PM: 6906e22d INFO   PostgreSQL session store initialized.
+Apr 22, 01:41:59 PM: 6906e22d INFO   Storage initialized successfully.
+Apr 22, 01:41:59 PM: 6906e22d INFO   Routes registered.
+Apr 22, 01:41:59 PM: 6906e22d ERROR  Auth Middleware Catch Error: TypeError: Cannot convert undefined or null to object
+    at Function.entries (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:17)
+    at /var/task/netlify/functions/api.js:181102:22
+    at Array.reduce (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:33)
+    at /var/task/netlify/functions/api.js:184962:26
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase._prepare (/var/task/netlify/functions/api.js:184961:19)
+    at /var/task/netlify/functions/api.js:184986:19
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase.execute (/var/task/netlify/functions/api.js:184985:19)
+    at PgSelectBase.then (/var/task/netlify/functions/api.js:182448:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Apr 22, 01:41:59 PM: 6906e22d INFO   GET /api/expenses 500 in 146ms :: {"message":"Internal Server Error during authenti…
+Apr 22, 01:41:59 PM: 6906e22d Duration: 366.76 ms	Memory Usage: 139 MB
+Apr 22, 01:42:16 PM: 7e7c8293 ERROR  Auth Middleware Catch Error: TypeError: Cannot convert undefined or null to object
+    at Function.entries (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:17)
+    at /var/task/netlify/functions/api.js:181102:22
+    at Array.reduce (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:33)
+    at /var/task/netlify/functions/api.js:184962:26
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase._prepare (/var/task/netlify/functions/api.js:184961:19)
+    at /var/task/netlify/functions/api.js:184986:19
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase.execute (/var/task/netlify/functions/api.js:184985:19)
+    at PgSelectBase.then (/var/task/netlify/functions/api.js:182448:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Apr 22, 01:42:16 PM: 7e7c8293 INFO   POST /api/trips 500 in 140ms :: {"message":"Internal Server Error during authenti…
+Apr 22, 01:42:16 PM: 7e7c8293 Duration: 153.93 ms	Memory Usage: 152 MB
+Apr 22, 01:42:33 PM: c76b514f INFO   Auth: No Authorization header found or not Bearer.
+Apr 22, 01:42:33 PM: c76b514f INFO   GET /api/expenses 401 in 1ms :: {"message":"Unauthorized: Authorization header mi…
+Apr 22, 01:42:33 PM: c76b514f Duration: 3.44 ms	Memory Usage: 147 MB
+Apr 22, 01:42:33 PM: f032ca62 INFO   Auth: No Authorization header found or not Bearer.
+Apr 22, 01:42:33 PM: f032ca62 INFO   GET /api/profile 401 in 1ms :: {"message":"Unauthorized: Authorization header mi…
+Apr 22, 01:42:33 PM: f032ca62 Duration: 19.76 ms	Memory Usage: 159 MB
+Apr 22, 01:42:33 PM: 8728c93f INFO   Auth: No Authorization header found or not Bearer.
+Apr 22, 01:42:33 PM: 8728c93f INFO   GET /api/trips 401 in 3ms :: {"message":"Unauthorized: Authorization header mi…
+Apr 22, 01:42:33 PM: 8728c93f Duration: 63.99 ms	Memory Usage: 156 MB
+Apr 22, 02:57:54 PM: INFO   Supabase client initialized for URL: https://wrahnhyytxtddwngwnvf.supabase.co
+Apr 22, 02:57:54 PM: INFO   Testing database connection...
+Apr 22, 02:57:54 PM: ERROR  (node:9) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Apr 22, 02:57:54 PM: 2083d950 INFO   Successfully connected to Supabase database.
+Apr 22, 02:57:54 PM: 2083d950 INFO   PostgreSQL session store initialized.
+Apr 22, 02:57:54 PM: 2083d950 INFO   Storage initialized successfully.
+Apr 22, 02:57:54 PM: 2083d950 INFO   Routes registered.
+Apr 22, 02:57:54 PM: 2083d950 ERROR  Auth Middleware Catch Error: TypeError: Cannot convert undefined or null to object
+    at Function.entries (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:17)
+    at /var/task/netlify/functions/api.js:181102:22
+    at Array.reduce (<anonymous>)
+    at orderSelectedFields (/var/task/netlify/functions/api.js:181092:33)
+    at /var/task/netlify/functions/api.js:184962:26
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase._prepare (/var/task/netlify/functions/api.js:184961:19)
+    at /var/task/netlify/functions/api.js:184986:19
+    at Object.startActiveSpan (/var/task/netlify/functions/api.js:180465:14)
+    at PgSelectBase.execute (/var/task/netlify/functions/api.js:184985:19)
+    at PgSelectBase.then (/var/task/netlify/functions/api.js:182448:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+Apr 22, 02:57:54 PM: 2083d950 INFO   GET /api/trips 500 in 217ms :: {"message":"Internal Server Error during authenti…
+Apr 22, 02:57:54 PM: 2083d950 Duration: 458.65 ms	Memory Usage: 139 MB
