@@ -1,66 +1,17 @@
-// Use CommonJS require for compatibility with Netlify functions
-const { users, trips, expenses } = require("../shared/schema");
-const schema = require('../shared/schema'); // Import schema for enum
-const session = require("express-session");
-
-// Type definitions for TypeScript
-/**
- * Storage interface for database operations
- * @interface
- */
-class IStorage {
-  // User methods
-  async getUserById(id) { return null; }
-  async getUserByUsername(username) { return null; }
-  async getUserByClerkId(clerkUserId) { return null; }
-  async getUserByEmail(email) { return null; }
-  async createUserWithClerkId(clerkUserId, email, firstName, lastName) { return null; }
-  async updateUserProfile(userId, profileData) { return null; }
-
-  // Trip methods
-  async getTrip(id) { return null; }
-  async getTripsByUserId(userId) { return null; }
-  async createTrip(trip) { return null; }
-  async updateTrip(id, trip) { return null; }
-  async deleteTrip(id) { return null; }
-
-  // Expense methods
-  async getExpense(id) { return null; }
-  async getExpensesByUserId(userId) { return null; }
-  async getExpensesByTripName(userId, tripName) { return null; }
-  async createExpense(expense) { return null; }
-  async updateExpense(id, expense) { return null; }
-  async deleteExpense(id) { return null; }
-
-  // Mileage Log methods
-  async getMileageLogById(id) { return null; }
-  async getMileageLogsByUserId(userId, options) { return null; }
-  async createMileageLog(log) { return null; }
-  async updateMileageLog(id, log) { return null; }
-  async deleteMileageLog(id) { return null; }
-
-  // Background Task methods
-  async createBackgroundTask(taskData) { return null; }
-  async updateBackgroundTaskStatus(id, status, result, error) { return null; }
-  async getBackgroundTaskById(id) { return null; }
-  async getBackgroundTasksByUserId(userId) { return null; }
-
-  // File Storage methods
-  async uploadFile(filePath, fileBuffer, contentType, bucketName) { return null; }
-  async deleteFile(filePath, bucketName) { return null; }
-  async getSignedUrl(filePath, expiresIn, bucketName) { return null; }
-  async downloadFile(filePath, bucketName) { return null; }
-}
+// Use ES module imports
+// Removed unused imports of schema and session
+import { IStorage } from './storage/storage.interface.js'; // Import IStorage from the new interface file
 
 // MemStorage class removed as it's no longer used.
+// Removed the duplicate IStorage class definition
 
-// Use require for compatibility with Netlify functions
-const { SupabaseStorage } = require('./supabase-storage');
+// Use ES module import
+import { SupabaseStorage } from './supabase-storage.js'; // Use .js extension
 
 // Export an async function to initialize the storage
-async function initializeStorage() {
+async function initializeStorage(): Promise<IStorage> { // Add return type hint
   console.log("[STORAGE] initializeStorage function called.");
-  console.log("[STORAGE] Module type:", typeof module !== 'undefined' ? 'CommonJS' : 'ESM');
+  console.log("[STORAGE] Module type: ESM"); // Updated log
   console.log("[STORAGE] SupabaseStorage import:", typeof SupabaseStorage);
   
   // Check if SupabaseStorage is properly imported
@@ -72,10 +23,10 @@ async function initializeStorage() {
   // Add detailed diagnostic logs
   console.log("[STORAGE] SupabaseStorage class exists:", typeof SupabaseStorage === 'function');
   console.log("[STORAGE] SupabaseStorage properties:", Object.keys(SupabaseStorage));
-  console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof SupabaseStorage.initialize === 'function');
+  console.log("[STORAGE] SupabaseStorage.initialize exists:", typeof (SupabaseStorage as any).initialize === 'function'); // Cast to any for property access
 
   // Ensure SupabaseStorage.initialize exists before calling it
-  if (typeof SupabaseStorage.initialize !== 'function') {
+  if (typeof (SupabaseStorage as any).initialize !== 'function') { // Cast to any for property access
     console.error("[STORAGE] CRITICAL ERROR: SupabaseStorage.initialize is not a function");
     throw new Error("SupabaseStorage.initialize is not a function. Check class implementation.");
   }
@@ -83,10 +34,10 @@ async function initializeStorage() {
   try {
     // Call the static initialize method
     // console.log("[STORAGE] Calling SupabaseStorage.initialize()..."); // Remove diagnostic log
-    const storageInstance = await SupabaseStorage.initialize();
+    const storageInstance = await (SupabaseStorage as any).initialize(); // Cast to any for method call
     // console.log("[STORAGE] SupabaseStorage initialization successful"); // Remove diagnostic log
     // console.log("[STORAGE] Storage instance methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(storageInstance))); // Optional: Keep if needed
-    return storageInstance;
+    return storageInstance as IStorage; // Cast return type
   } catch (error: any) {
     console.error("[STORAGE] FATAL ERROR: SupabaseStorage initialization failed in initializeStorage:", error);
     console.error("[STORAGE] Error stack:", error.stack);
@@ -94,8 +45,8 @@ async function initializeStorage() {
   }
 }
 
-// Export for CommonJS compatibility
-module.exports = {
+// Export for ES module compatibility
+export {
   initializeStorage,
-  IStorage: null // This is just for TypeScript interface, not used at runtime
+  IStorage // Export IStorage from here for convenience
 };

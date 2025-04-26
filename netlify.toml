@@ -1,10 +1,7 @@
 [build]
   # Build both server and client assets
   command = "npm run build:server && npm run build"
-  # Skip TypeScript build for server and just build client assets
-  # Directory containing the built client-side assets
   publish = "client/dist"
-  # Directory where Netlify will find the serverless functions
   functions = "netlify/functions"
 
 [functions]
@@ -24,6 +21,7 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
 [dev]
   # Directory to serve for local development
   publish = "client/dist" # Or "client" if you want Netlify Dev to run the client dev server
