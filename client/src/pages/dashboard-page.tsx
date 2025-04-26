@@ -70,9 +70,9 @@ export default function DashboardPage() {
     receipts: expenses ? expenses.filter((expense: Expense) => expense.receiptPath).length : 0
   };
 
-  // Get recent expenses and trips (ensure data exists before slicing)
-  const recentExpenses = expenses ? expenses.slice(0, 4) : [];
-  const recentTrips = trips ? trips.slice(0, 3) : [];
+  // Get recent expenses and trips (ensure data exists and is an array before slicing)
+  const recentExpenses = expenses && Array.isArray(expenses) ? expenses.slice(0, 4) : [];
+  const recentTrips = trips && Array.isArray(trips) ? trips.slice(0, 3) : [];
 
   // Prepare data for charts
   const expensesByCategory = expenses
@@ -95,9 +95,10 @@ export default function DashboardPage() {
       }, {})
     : {};
 
+  // Ensure we have valid arrays for chart data
   const trendData = {
-    labels: Object.keys(trendDataMap),
-    data: Object.values(trendDataMap)
+    labels: Object.keys(trendDataMap) || [],
+    data: Object.values(trendDataMap) || []
   };
 
   return (

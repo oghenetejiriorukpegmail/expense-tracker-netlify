@@ -23,7 +23,9 @@ export default function ExpenseTrendChart({ trendData, isLoading }: ExpenseTrend
       chartInstance.current.destroy();
     }
     
-    const { labels, data } = trendData;
+    // Ensure labels and data are valid arrays
+    const labels = Array.isArray(trendData.labels) ? trendData.labels : [];
+    const data = Array.isArray(trendData.data) ? trendData.data : [];
     
     if (labels.length === 0) {
       return;

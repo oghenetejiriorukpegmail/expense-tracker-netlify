@@ -49,7 +49,7 @@ export default function ExpenseChart({ expenseData, isLoading }: ExpenseChartPro
         labels: categories,
         datasets: [{
           data: values,
-          backgroundColor: colors.slice(0, categories.length),
+          backgroundColor: categories.length > 0 ? colors.slice(0, categories.length) : colors,
           borderWidth: 1,
           borderColor: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
         }]
