@@ -1,6 +1,6 @@
 [build]
-  # Use our custom build script that skips the server TypeScript build
-  command = "node netlify-build.js"
+  # Use our fixed build script that handles TypeScript errors
+  command = "node netlify-build.fix.js"
   publish = "client/dist"
   functions = "netlify/functions"
   
