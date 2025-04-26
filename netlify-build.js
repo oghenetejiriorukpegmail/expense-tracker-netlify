@@ -4,7 +4,17 @@ const fs = require('fs');
 
 console.log('Starting custom Netlify build script...');
 
-// Skip server build and only build the client
+// Build the server first
+try {
+  console.log('Building server...');
+  execSync('npm run build:server', { stdio: 'inherit' });
+  console.log('Server build completed successfully');
+} catch (error) {
+  console.error('Error building server:', error);
+  process.exit(1);
+}
+
+// Then build the client
 try {
   console.log('Building client...');
   execSync('npm run build', { stdio: 'inherit' });

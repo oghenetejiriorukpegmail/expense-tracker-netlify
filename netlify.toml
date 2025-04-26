@@ -6,7 +6,7 @@
   
   # Define environment variables for the build
   [build.environment]
-    SKIP_SERVER_BUILD = "true"
+    # Server build is now included in the build process
 
 [functions]
   # Specify the Node.js runtime version if needed (optional, Netlify often defaults reasonably)
