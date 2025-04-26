@@ -14,7 +14,7 @@ export async function createBackgroundTask(db: PostgresJsDatabase<typeof schema>
     // Create a mock task object to return
     const mockTask: BackgroundTask = {
       id: -1, // Use a negative ID to indicate it's a mock
-      user_id: taskData.userId,
+      userId: taskData.userId,
       type: taskData.type as any,
       status: taskData.status as any,
       result: typeof taskData.result === 'string' ? taskData.result : JSON.stringify(taskData.result),

@@ -104,8 +104,8 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
       let supabasePath: string | null = null;
       if (authReq.file) { // Use authReq.file
         const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
-        const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
-        supabasePath = uploadResult.path;
+        const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype, 'receipts');
+        supabasePath = uploadResult.data?.path || uniquePath;
         console.log(`Uploaded receipt for new expense to Supabase: ${supabasePath}`);
       }
 
@@ -128,8 +128,8 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
           // Create a background task for OCR processing
           const taskData = {
             userId: internalUserId,
-            type: 'receipt_ocr', // Task type for OCR processing
-            status: 'pending',
+            type: 'receipt_ocr' as 'receipt_ocr', // Cast to the specific enum type
+            status: 'pending' as 'pending',
             result: JSON.stringify({
               expenseId: expense.id,
               receiptPath: supabasePath,
@@ -233,11 +233,11 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
       if (authReq.file) { // Use authReq.file
         if (expense.receiptPath) {
           console.log(`Deleting old receipt ${expense.receiptPath} from Supabase.`);
-          await storage.deleteFile(expense.receiptPath).catch((e: any) => console.error("Failed to delete old Supabase receipt:", e)); // Add type to catch
+          await storage.deleteFile(expense.receiptPath, 'receipts').catch((e: any) => console.error("Failed to delete old Supabase receipt:", e));
         }
         const uniquePath = `receipts/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
-        const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
-        supabasePath = uploadResult.path;
+        const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype, 'receipts');
+        supabasePath = uploadResult.data?.path || uniquePath;
         console.log(`Uploaded new receipt for expense ${expenseId} to Supabase: ${supabasePath}`);
         
         // Create a background task for OCR processing
@@ -248,8 +248,8 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
           // Create a background task for OCR processing
           const taskData = {
             userId: internalUserId,
-            type: 'receipt_ocr', // Task type for OCR processing
-            status: 'pending',
+            type: 'receipt_ocr' as 'receipt_ocr', // Cast to the specific enum type
+            status: 'pending' as 'pending',
             result: JSON.stringify({
               expenseId: expenseId,
               receiptPath: supabasePath,
@@ -320,7 +320,7 @@ export function createExpenseRouter(storage: IStorage): express.Router { // Use 
 
       if (expense.receiptPath) {
         console.log(`Deleting receipt ${expense.receiptPath} from Supabase for expense ${expenseId}.`);
-        await storage.deleteFile(expense.receiptPath).catch((e: any) => console.error("Failed to delete Supabase receipt:", e)); // Add type to catch
+        await storage.deleteFile(expense.receiptPath, 'receipts').catch((e: any) => console.error("Failed to delete Supabase receipt:", e));
       }
       await storage.deleteExpense(expenseId);
       res.status(204).send();

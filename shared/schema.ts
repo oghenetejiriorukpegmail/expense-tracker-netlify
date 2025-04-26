@@ -118,23 +118,23 @@ export const insertExpenseSchema = createInsertSchema(expenses).pick({
 
 // Schema for inserting background tasks (most fields have defaults)
 export const insertBackgroundTaskSchema = createInsertSchema(backgroundTasks).pick({
-    userId: true,
-    type: true,
-    status: true, // Optional override default 'pending'
-    result: true, // Optional initial result data
-    error: true, // Optional initial error data
+  userId: true,
+  type: true,
+  status: true, // Optional override default 'pending'
+  result: true, // Optional initial result data
+  error: true, // Optional initial error data
 });
 
 
 // 1. Raw schema from createInsertSchema + pick
 export const rawInsertMileageLogSchema = createInsertSchema(mileageLogs).pick({
-    tripId: true, // Optional
-    tripDate: true,
-    startOdometer: true,
-    endOdometer: true,
-    purpose: true, // Optional
-    entryMethod: true,
-    // calculatedDistance is derived, start/endImageUrl handled separately
+  tripId: true, // Optional
+  tripDate: true,
+  startOdometer: true,
+  endOdometer: true,
+  purpose: true, // Optional
+  entryMethod: true,
+  // calculatedDistance is derived, start/endImageUrl handled separately
 });
 
 // 2. Extended schema with number validation

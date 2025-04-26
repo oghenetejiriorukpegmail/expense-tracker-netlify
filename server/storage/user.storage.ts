@@ -52,7 +52,7 @@ export async function getUserByEmail(db: PostgresJsDatabase<typeof schema>, emai
   return result[0];
 }
 
-export async function updateUserProfile(db: PostgresJsDatabase<typeof schema>, userId: number, profileData: { firstName: string; lastName?: string | null; phoneNumber?: string | null; email: string; bio?: string | null }): Promise<User | undefined> {
+export async function updateUserProfile(db: PostgresJsDatabase<typeof schema>, userId: number, profileData: { firstName?: string; lastName?: string | null; phoneNumber?: string | null; email?: string; bio?: string | null }): Promise<User | undefined> {
   const updateData: Partial<typeof schema.users.$inferInsert> = {};
   if (profileData.firstName !== undefined) updateData.firstName = profileData.firstName;
   if (profileData.lastName !== undefined) updateData.lastName = profileData.lastName ?? '';

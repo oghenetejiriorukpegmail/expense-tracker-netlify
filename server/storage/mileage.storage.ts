@@ -50,7 +50,7 @@ export async function getMileageLogsByUserId(db: PostgresJsDatabase<typeof schem
 }
 
 
-export async function createMileageLog(db: PostgresJsDatabase<typeof schema>, logData: InsertMileageLog & { userId: number; calculatedDistance: number; startImageUrl?: string | null; endImageUrl?: string | null }): Promise<MileageLog> {
+export async function createMileageLog(db: PostgresJsDatabase<typeof schema>, logData: InsertMileageLog & { userId: number; calculatedDistance: string | number; startImageUrl?: string | null; endImageUrl?: string | null }): Promise<MileageLog> {
   if (logData.startOdometer === undefined || logData.endOdometer === undefined || logData.tripDate === undefined || logData.entryMethod === undefined) {
       throw new Error("Missing required fields for mileage log creation.");
   }
@@ -59,7 +59,7 @@ export async function createMileageLog(db: PostgresJsDatabase<typeof schema>, lo
       ...logData,
       startOdometer: String(logData.startOdometer),
       endOdometer: String(logData.endOdometer),
-      calculatedDistance: String(logData.calculatedDistance),
+      calculatedDistance: typeof logData.calculatedDistance === 'number' ? String(logData.calculatedDistance) : logData.calculatedDistance,
       tripId: logData.tripId ?? null,
       purpose: logData.purpose ?? null,
       startImageUrl: logData.startImageUrl ?? null,
@@ -72,14 +72,14 @@ export async function createMileageLog(db: PostgresJsDatabase<typeof schema>, lo
   return result[0];
 }
 
-export async function updateMileageLog(db: PostgresJsDatabase<typeof schema>, id: number, logData: Partial<InsertMileageLog & { calculatedDistance?: number; startImageUrl?: string | null; endImageUrl?: string | null }>): Promise<MileageLog> {
+export async function updateMileageLog(db: PostgresJsDatabase<typeof schema>, id: number, logData: Partial<InsertMileageLog & { calculatedDistance?: string | number; startImageUrl?: string | null; endImageUrl?: string | null }>): Promise<MileageLog> {
   const dataToUpdate: Partial<typeof schema.mileageLogs.$inferInsert> = {};
 
   if (logData.tripId !== undefined) dataToUpdate.tripId = logData.tripId ?? null;
   if (logData.tripDate !== undefined) dataToUpdate.tripDate = logData.tripDate;
   if (logData.startOdometer !== undefined) dataToUpdate.startOdometer = String(logData.startOdometer);
   if (logData.endOdometer !== undefined) dataToUpdate.endOdometer = String(logData.endOdometer);
-  if (logData.calculatedDistance !== undefined) dataToUpdate.calculatedDistance = String(logData.calculatedDistance);
+  if (logData.calculatedDistance !== undefined) dataToUpdate.calculatedDistance = typeof logData.calculatedDistance === 'number' ? String(logData.calculatedDistance) : logData.calculatedDistance;
   if (logData.purpose !== undefined) dataToUpdate.purpose = logData.purpose ?? null;
   if (logData.startImageUrl !== undefined) dataToUpdate.startImageUrl = logData.startImageUrl ?? null;
   if (logData.endImageUrl !== undefined) dataToUpdate.endImageUrl = logData.endImageUrl ?? null;

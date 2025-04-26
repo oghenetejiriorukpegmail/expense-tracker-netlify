@@ -1,8 +1,12 @@
 [build]
-  # Build both server and client assets
-  command = "npm run build:server && npm run build"
+  # Use our custom build script that skips the server TypeScript build
+  command = "node netlify-build.js"
   publish = "client/dist"
   functions = "netlify/functions"
+  
+  # Define environment variables for the build
+  [build.environment]
+    SKIP_SERVER_BUILD = "true"
 
 [functions]
   # Specify the Node.js runtime version if needed (optional, Netlify often defaults reasonably)

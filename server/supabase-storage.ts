@@ -18,7 +18,7 @@ import * as taskStorage from './storage/task.storage.js'; // Use .js extension f
 import * as fileStorage from './storage/file.storage.js'; // Use .js extension for ES modules
 
 // Type definitions for TypeScript
-type PostgresJsDatabase = any; // Consider importing proper types if available
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 type User = schema.User;
 type PublicUser = schema.PublicUser;
 type InsertUser = schema.InsertUser;
@@ -53,7 +53,7 @@ if (!supabaseServiceKey) {
 
 // Define a class that implements the storage interface
 class SupabaseStorage extends IStorage {
-  private db: PostgresJsDatabase<typeof schema>;
+  private db: PostgresJsDatabase;
   private client: postgres.Sql; // Use postgres.Sql type
   // Removed supabase client instance as it's initialized in file.storage.ts
   public sessionStore: any; // Add type for sessionStore
@@ -102,7 +102,7 @@ class SupabaseStorage extends IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> { // Add type hints
     return userStorage.getUserByUsername(this.db, username);
   }
-  async getUserByClerkId(clerkUserId: string): Promise<User | undefined> { // Add type hints
+  async getUserByClerkId(clerkUserId: string): Promise<PublicUser | undefined> { // Changed return type to PublicUser
     return userStorage.getUserByClerkId(this.db, clerkUserId);
   }
   async getUserByEmail(email: string): Promise<User | undefined> { // Add type hints
@@ -112,7 +112,7 @@ class SupabaseStorage extends IStorage {
     return userStorage.updateUserProfile(this.db, userId, profileData);
   }
   
-  async createUserWithClerkId(clerkUserId: string, email = '', firstName = '', lastName = ''): Promise<User> { // Add type hints
+  async createUserWithClerkId(clerkUserId: string, email = '', firstName = '', lastName = ''): Promise<PublicUser> { // Changed return type to PublicUser
     return userStorage.createUserWithClerkId(this.db, clerkUserId, email, firstName, lastName);
   }
 
@@ -167,7 +167,15 @@ class SupabaseStorage extends IStorage {
     return mileageStorage.getMileageLogsByUserId(this.db, userId, options);
   }
   async createMileageLog(logData: InsertMileageLog & { userId: number }): Promise<MileageLog> { // Add type hints
-    return mileageStorage.createMileageLog(this.db, logData);
+    // Calculate distance from odometer readings
+    const calculatedDistance = String(logData.endOdometer - logData.startOdometer);
+    
+    return mileageStorage.createMileageLog(this.db, {
+      ...logData,
+      calculatedDistance,
+      startImageUrl: null,
+      endImageUrl: null
+    });
   }
   async updateMileageLog(id: number, logData: Partial<InsertMileageLog>): Promise<MileageLog | undefined> { // Add type hints
     return mileageStorage.updateMileageLog(this.db, id, logData);
@@ -180,7 +188,7 @@ class SupabaseStorage extends IStorage {
   async createBackgroundTask(taskData: InsertBackgroundTask): Promise<BackgroundTask> { // Add type hints
     return taskStorage.createBackgroundTask(this.db, taskData);
   }
-  async updateBackgroundTaskStatus(id: number, status: string, result?: string | null, error?: string | null): Promise<BackgroundTask | undefined> { // Add type hints
+  async updateBackgroundTaskStatus(id: number, status: "pending" | "processing" | "completed" | "failed", result?: string | null, error?: string | null): Promise<BackgroundTask | undefined> { // Fixed status type
     return taskStorage.updateBackgroundTaskStatus(this.db, id, status, result, error);
   }
   async getBackgroundTaskById(id: number): Promise<BackgroundTask | undefined> { // Add type hints
@@ -194,17 +202,21 @@ class SupabaseStorage extends IStorage {
   // --- File Storage methods (delegated) ---
   // Add named export for backward compatibility
   // export { SupabaseStorage }; // Moved outside class
-  async uploadFile(filePath: string, fileBuffer: Buffer, contentType: string, bucketName: string): Promise<{ data: any, error: any }> { // Add type hints
-    return fileStorage.uploadFile(filePath, fileBuffer, contentType, bucketName);
+  async uploadFile(filePath: string, fileBuffer: Buffer, contentType: string, bucketName: string = 'receipts'): Promise<{ data: any, error: any }> { // Add type hints
+    const result = await fileStorage.uploadFile(filePath, fileBuffer, contentType, bucketName);
+    return { data: result, error: null };
   }
-  async deleteFile(filePath: string, bucketName: string): Promise<{ data: any, error: any }> { // Add type hints
-    return fileStorage.deleteFile(filePath, bucketName);
+  async deleteFile(filePath: string, bucketName: string = 'receipts'): Promise<{ data: any, error: any }> { // Add type hints
+    await fileStorage.deleteFile(filePath, bucketName);
+    return { data: true, error: null };
   }
-  async getSignedUrl(filePath: string, expiresIn: number, bucketName: string): Promise<{ data: any, error: any }> { // Add type hints
-    return fileStorage.getSignedUrl(filePath, expiresIn, bucketName);
+  async getSignedUrl(filePath: string, expiresIn: number, bucketName: string = 'receipts'): Promise<{ data: any, error: any }> { // Add type hints
+    const result = await fileStorage.getSignedUrl(filePath, expiresIn, bucketName);
+    return { data: result, error: null };
   }
-  async downloadFile(filePath: string, bucketName: string): Promise<{ data: any, error: any }> { // Add type hints
-    return fileStorage.downloadFile(filePath, bucketName); // Corrected downloadFile call
+  async downloadFile(filePath: string, bucketName: string = 'receipts'): Promise<{ data: any, error: any }> { // Add type hints
+    const result = await fileStorage.downloadFile(filePath, bucketName);
+    return { data: result, error: null };
   }
 
 }

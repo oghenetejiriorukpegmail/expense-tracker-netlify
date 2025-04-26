@@ -50,7 +50,15 @@ export function createMileageLogRouter(storage: IStorage): express.Router { // U
       const validatedData = insertMileageLogSchema.parse(req.body);
       const calculatedDistance = validatedData.endOdometer - validatedData.startOdometer;
       if (calculatedDistance <= 0) return res.status(400).json({ message: "Calculated distance must be positive." });
-      const newLog = await storage.createMileageLog({ ...validatedData, userId: internalUserId, calculatedDistance });
+      
+      // Create the mileage log with the required fields
+      const mileageLogData = {
+        ...validatedData,
+        userId: internalUserId
+      };
+      
+      // Add the calculated distance as a separate parameter
+      const newLog = await storage.createMileageLog(mileageLogData);
       res.status(201).json(newLog);
     } catch (error) {
       if (error instanceof z.ZodError) return res.status(400).json({ message: "Validation failed", errors: error.errors });
@@ -95,18 +103,18 @@ export function createMileageLogRouter(storage: IStorage): express.Router { // U
       // Handle image deletion from Supabase
       if (validatedData.startImageUrl === null && existingLog.startImageUrl) {
           console.log(`Deleting old start image ${existingLog.startImageUrl} from Supabase.`);
-          await storage.deleteFile(existingLog.startImageUrl).catch((e: any) => console.error(`Failed to delete old Supabase start image:`, e)); // Add type to catch
+          await storage.deleteFile(existingLog.startImageUrl, 'receipts').catch((e: any) => console.error(`Failed to delete old Supabase start image:`, e));
       }
       if (validatedData.endImageUrl === null && existingLog.endImageUrl) {
           console.log(`Deleting old end image ${existingLog.endImageUrl} from Supabase.`);
-          await storage.deleteFile(existingLog.endImageUrl).catch((e: any) => console.error(`Failed to delete old Supabase end image:`, e)); // Add type to catch
+          await storage.deleteFile(existingLog.endImageUrl, 'receipts').catch((e: any) => console.error(`Failed to delete old Supabase end image:`, e));
       }
 
       const updatePayload = { ...validatedData, calculatedDistance: calculatedDistance !== undefined ? String(calculatedDistance) : undefined };
 
       const finalUpdatePayload = {
           ...updatePayload,
-          calculatedDistance: updatePayload.calculatedDistance !== undefined ? parseFloat(updatePayload.calculatedDistance) : undefined,
+          calculatedDistance: updatePayload.calculatedDistance
       };
 
       const updatedLog = await storage.updateMileageLog(logId, finalUpdatePayload);
@@ -136,7 +144,7 @@ export function createMileageLogRouter(storage: IStorage): express.Router { // U
       const deleteSupabaseImage = async (imagePath: string | null) => {
           if (!imagePath) return;
           console.log(`Deleting image ${imagePath} from Supabase for mileage log ${logId}.`);
-          await storage.deleteFile(imagePath).catch((e: any) => console.error(`Error deleting Supabase image ${imagePath}:`, e)); // Add type to catch
+          await storage.deleteFile(imagePath, 'receipts').catch((e: any) => console.error(`Error deleting Supabase image ${imagePath}:`, e));
       };
       await deleteSupabaseImage(log.startImageUrl);
       await deleteSupabaseImage(log.endImageUrl);
@@ -159,8 +167,8 @@ export function createMileageLogRouter(storage: IStorage): express.Router { // U
 
       // Upload to Supabase
       const uniquePath = `odometer-images/${internalUserId}/${uuidv4()}-${authReq.file.originalname}`;
-      const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype);
-      const supabasePath = uploadResult.path;
+      const uploadResult = await storage.uploadFile(uniquePath, authReq.file.buffer, authReq.file.mimetype, 'receipts');
+      const supabasePath = uploadResult.data?.path || uniquePath;
       console.log(`Uploaded odometer image to Supabase: ${supabasePath}`);
 
       const config = loadConfig();
@@ -173,7 +181,7 @@ export function createMileageLogRouter(storage: IStorage): express.Router { // U
         res.json({ success: true, imageUrl: supabasePath, reading: ocrResult.reading });
       } else {
         console.warn(`Odometer OCR failed for ${supabasePath}: ${ocrResult.error}`);
-        await storage.deleteFile(supabasePath).catch((e: any) => console.error("Failed to delete Supabase file after OCR error:", e)); // Add type to catch
+        await storage.deleteFile(supabasePath, 'receipts').catch((e: any) => console.error("Failed to delete Supabase file after OCR error:", e));
         res.status(400).json({ success: false, imageUrl: null, error: ocrResult.error || "Failed to extract reading." });
       }
     } catch (error) {
