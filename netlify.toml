@@ -1,5 +1,5 @@
 [build]
-  command = "cd expense-tracker-svelte && npm install && npm run build"
+  command = "cd expense-tracker-svelte && npm install --include=dev && npm run build"
   publish = "expense-tracker-svelte/build"
   functions = "netlify/functions"
   
@@ -9,28 +9,29 @@
     NPM_FLAGS = "--no-audit --no-fund"
     # Enable more verbose build output for debugging
     DEBUG = "netlify:build"
+    NODE_ENV = "development"
 
 # Define different contexts for branch-specific settings
 # Production context: all deploys from the Production branch set in your site's
 # deploy contexts will inherit these settings.
 [context.production]
-  command = "cd expense-tracker-svelte && npm install && npm run build"
+  command = "cd expense-tracker-svelte && npm install --include=dev && npm run build"
   [context.production.environment]
-    NODE_ENV = "production"
+    NODE_ENV = "development"
 
 # Deploy Preview context: all deploys generated from a pull/merge request
 # will inherit these settings.
 [context.deploy-preview]
-  command = "cd expense-tracker-svelte && npm install && npm run build"
+  command = "cd expense-tracker-svelte && npm install --include=dev && npm run build"
   [context.deploy-preview.environment]
-    NODE_ENV = "production"
+    NODE_ENV = "development"
 
 # Branch Deploy context: all deploys that are not from a pull/merge request
 # or from the Production branch will inherit these settings.
 [context.branch-deploy]
-  command = "cd expense-tracker-svelte && npm install && npm run build"
+  command = "cd expense-tracker-svelte && npm install --include=dev && npm run build"
   [context.branch-deploy.environment]
-    NODE_ENV = "production"
+    NODE_ENV = "development"
 
 [functions]
   node_bundler = "esbuild"
