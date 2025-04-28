@@ -1,15 +1,15 @@
-import { useEffect, lazy, Suspense } from "react"; // Import useEffect, lazy, and Suspense
+import { useEffect, lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { supabase } from "./lib/supabaseClient"; // Import supabase client
+import { supabase } from "./lib/supabaseClient";
 import { RealtimeChannel, RealtimePostgresChangesPayload, REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
-import { useToast } from "./hooks/use-toast"; // Import useToast
+import { useToast } from "./hooks/use-toast";
 import { ProtectedRoute } from "@/lib/protected-route";
-import { useModalStore } from "./lib/store"; // Import modal store
-import type { BackgroundTask } from "../../shared/schema"; // Corrected relative path
-import { AuthenticateWithRedirectCallback } from "@clerk/clerk-react"; // Import Clerk callback component
+import { useModalStore } from "./lib/store";
+import type { BackgroundTask } from "../../shared/schema";
+import { AuthProvider } from "@/lib/authContext"; // Import our new AuthProvider
 
 // Dynamically import page components
 const NotFound = lazy(() => import("@/pages/not-found"));
@@ -44,17 +44,15 @@ function Router() {
         <ProtectedRoute path="/trips" component={TripsPage} />
         <ProtectedRoute path="/expenses" component={ExpensesPage} />
         <ProtectedRoute path="/settings" component={SettingsPage} />
-        <ProtectedRoute path="/profile" component={ProfilePage} /> {/* Add Profile route */}
-        <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} /> {/* Add Mileage Logs route */}
-        {/* Handle all Clerk authentication paths using the callback handler */}
-        <Route path="/auth/sign-in/:rest*" component={AuthCallbackHandler} />
-        <Route path="/auth/sign-up/:rest*" component={AuthCallbackHandler} />
-        <Route path="/auth/sso-callback" component={AuthCallbackHandler} />
-        <Route path="/auth/:rest*" component={AuthCallbackHandler} />
-        {/* Explicit route for the base auth pages */}
-        <Route path="/auth" component={AuthPage} />
+        <ProtectedRoute path="/profile" component={ProfilePage} />
+        <ProtectedRoute path="/mileage-logs" component={MileageLogsPage} />
+        {/* Auth routes */}
+        <Route path="/auth/callback" component={AuthCallbackHandler} />
+        <Route path="/auth/reset-password" component={AuthPage} />
+        <Route path="/auth/verify-email" component={VerifyEmailPage} />
         <Route path="/auth/sign-in" component={AuthPage} />
         <Route path="/auth/sign-up" component={AuthPage} />
+        <Route path="/auth" component={AuthPage} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
@@ -69,7 +67,6 @@ function App() {
     mileageLogTripId,
     toggleAddEditMileageLog,
   } = useModalStore();
-
 
   const { toast } = useToast(); // Get toast function
 
@@ -167,23 +164,24 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Removed AuthProvider wrapper */}
-      <Router />
-      <Toaster />
-      {/* Wrap modals in Suspense */}
-      <Suspense fallback={null}>
-        {/* Add EditTripModal alongside other modals */}
-        <EditTripModal />
-        <EditExpenseModal />
-        <BatchUploadModal /> {/* Render BatchUploadModal */}
-        {/* Render Mileage Log Modal conditionally */}
-        <AddEditMileageLogModal
-          isOpen={addEditMileageLogOpen}
-          onClose={() => toggleAddEditMileageLog()} // Close modal using toggle function
-          mileageLog={editingMileageLog}
-          tripId={mileageLogTripId}
-        />
-      </Suspense>
+      {/* Wrap the app with our Firebase AuthProvider */}
+      <AuthProvider>
+        <Router />
+        <Toaster />
+        {/* Wrap modals in Suspense */}
+        <Suspense fallback={null}>
+          <EditTripModal />
+          <EditExpenseModal />
+          <BatchUploadModal />
+          {/* Render Mileage Log Modal conditionally */}
+          <AddEditMileageLogModal
+            isOpen={addEditMileageLogOpen}
+            onClose={() => toggleAddEditMileageLog()}
+            mileageLog={editingMileageLog}
+            tripId={mileageLogTripId}
+          />
+        </Suspense>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

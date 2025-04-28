@@ -19,13 +19,24 @@ export const users = pgTable("users", {
 });
 
 // Define trips table for PostgreSQL
+export const tripStatusEnum = pgEnum('trip_status', ['Planned', 'InProgress', 'Completed', 'Cancelled']);
+
 export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
-  // Ensure foreign key references integer type (serial resolves to integer)
   userId: integer("user_id").notNull().references(() => users.id),
   name: text("name").notNull(),
   description: text("description"),
+  status: tripStatusEnum("status").notNull().default('Planned'),
+  startDate: timestamp("start_date", { withTimezone: true, mode: 'date' }).notNull(),
+  endDate: timestamp("end_date", { withTimezone: true, mode: 'date' }).notNull(),
+  budget: numeric("budget", { precision: 10, scale: 2 }),
+  currency: text("currency").notNull().default('USD'),
+  location: text("location"),
+  tags: text("tags").array(),
+  totalExpenses: numeric("total_expenses", { precision: 10, scale: 2 }).notNull().default('0'),
+  expenseCount: integer("expense_count").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'date' }).defaultNow(),
 });
 
 // Define expenses table for PostgreSQL
@@ -99,10 +110,28 @@ export const insertUserSchema = createInsertSchema(users).pick({
   // bio is optional, not included by default
 });
 
-export const insertTripSchema = createInsertSchema(trips).pick({
-  name: true,
-  description: true,
-}); // Removed .omit({ userId: true })
+export const insertTripSchema = createInsertSchema(trips)
+  .pick({
+    name: true,
+    description: true,
+    status: true,
+    startDate: true,
+    endDate: true,
+    budget: true,
+    currency: true,
+    location: true,
+    tags: true,
+  })
+  .extend({
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    budget: z.number().min(0).optional(),
+    tags: z.array(z.string()).optional(),
+  })
+  .refine(data => data.endDate >= data.startDate, {
+    message: "End date must be after or equal to start date",
+    path: ["endDate"],
+  });
 
 export const insertExpenseSchema = createInsertSchema(expenses).pick({
   type: true,

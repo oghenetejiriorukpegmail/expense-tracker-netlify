@@ -1,11 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { getAuth } from "@clerk/express";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import { adminAuth } from '../firebase-admin'; // Use the initialized admin auth instance
 import type { IStorage } from "../storage.js"; // Import the interface type
 
-// Define request type augmentation for Clerk auth
-interface ClerkRequest extends Request {
-  auth?: { userId?: string | null }; // Clerk attaches auth here
+// Define request type augmentation for Firebase auth
+interface FirebaseRequest extends Request {
   headers: {
     authorization?: string;
     [key: string]: string | undefined;
@@ -13,10 +11,10 @@ interface ClerkRequest extends Request {
 }
 
 // Create a middleware function that verifies authentication and attaches user data
-export function createAuthMiddleware(storage: IStorage) { // Use IStorage interface
+export function createAuthMiddleware(storage: IStorage) {
   console.log("[AUTH] Creating auth middleware with storage");
   
-  return async (req: ClerkRequest, res: Response, next: NextFunction) => {
+  return async (req: FirebaseRequest, res: Response, next: NextFunction) => {
     try {
       console.log("[AUTH] Processing request:", req.method, req.path);
       
@@ -26,25 +24,35 @@ export function createAuthMiddleware(storage: IStorage) { // Use IStorage interf
         return res.status(500).json({ message: "Server configuration error: Storage not initialized" });
       }
       
-      // Get Clerk user ID from the request
-      const { userId: clerkUserId } = getAuth(req);
+      // Get the authorization header
+      const authHeader = req.headers.authorization;
       
-      // Debug: Log the entire auth object to see its structure
-      console.log("[AUTH] Clerk auth object:", JSON.stringify(req.auth, null, 2));
-      
-      // If no Clerk user ID, return unauthorized
-      if (!clerkUserId) {
+      // If no auth header, return unauthorized
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
         console.log("[AUTH] No Authorization header found or not Bearer.");
         return res.status(401).json({ message: "Unauthorized: Authorization header missing or invalid" });
       }
       
-      console.log("[AUTH] Authenticated with Clerk user ID:", clerkUserId);
+      // Extract the token
+      const token = authHeader.split('Bearer ')[1];
+      
+      // Verify the Firebase token
+      let decodedToken;
+      try {
+        decodedToken = await adminAuth.verifyIdToken(token);
+      } catch (tokenError) {
+        console.error("[AUTH] Invalid Firebase token:", tokenError);
+        return res.status(401).json({ message: "Unauthorized: Invalid token" });
+      }
+      
+      const firebaseUserId = decodedToken.uid;
+      console.log("[AUTH] Authenticated with Firebase user ID:", firebaseUserId);
 
-      // Fetch the user from the database using the Clerk user ID
-      console.log("[AUTH] Fetching user from database with Clerk ID:", clerkUserId);
+      // Fetch the user from the database using the Firebase user ID
+      console.log("[AUTH] Fetching user from database with Firebase ID:", firebaseUserId);
       let user;
       try {
-        user = await storage.getUserByClerkId(clerkUserId);
+        user = await storage.getUserByFirebaseId(firebaseUserId);
         console.log("[AUTH] User lookup result:", user ? `Found user with ID ${user.id}` : "User not found");
       } catch (dbError) {
         console.error("[AUTH] Database error during user lookup:", dbError);
@@ -53,46 +61,30 @@ export function createAuthMiddleware(storage: IStorage) { // Use IStorage interf
       
       // If user not found in our database, create a new user
       if (!user) {
-        console.log(`[AUTH] User with Clerk ID ${clerkUserId} not found in database. Creating new user.`);
+        console.log(`[AUTH] User with Firebase ID ${firebaseUserId} not found in database. Creating new user.`);
         
-        // Log headers to see what information is available
-        console.log("[AUTH] Request headers:", JSON.stringify(req.headers, null, 2));
+        // Extract user information from the decoded token
+        const email = decodedToken.email || '';
+        const name = decodedToken.name || '';
         
-        // Fetch user details from Clerk
-        console.log(`[AUTH] Fetching user details from Clerk for ID ${clerkUserId}`);
-        let email = '';
+        // Split name into first and last name if available
         let firstName = '';
         let lastName = '';
         
-        try {
-          const clerkUser = await clerkClient.users.getUser(clerkUserId);
-          
-          // Extract user information from Clerk
-          if (clerkUser) {
-            // Get primary email if available
-            if (clerkUser.emailAddresses && clerkUser.emailAddresses.length > 0) {
-              const primaryEmail = clerkUser.emailAddresses.find(email => email.id === clerkUser.primaryEmailAddressId);
-              email = primaryEmail ? primaryEmail.emailAddress : clerkUser.emailAddresses[0].emailAddress;
-            }
-            
-            firstName = clerkUser.firstName || '';
-            lastName = clerkUser.lastName || '';
-            
-            console.log(`[AUTH] Successfully fetched user details from Clerk - Email: ${email}, First Name: ${firstName}, Last Name: ${lastName}`);
-          }
-        } catch (clerkError) {
-          console.error("[AUTH] Error fetching user details from Clerk:", clerkError);
-          // Continue with empty values if Clerk API fails
+        if (name) {
+          const nameParts = name.split(' ');
+          firstName = nameParts[0] || '';
+          lastName = nameParts.slice(1).join(' ') || '';
         }
         
-        // Create a new user with the Clerk ID
-        console.log(`[AUTH] About to create user with Clerk ID ${clerkUserId}`);
+        // Create a new user with the Firebase ID
+        console.log(`[AUTH] About to create user with Firebase ID ${firebaseUserId}`);
         try {
-          user = await storage.createUserWithClerkId(clerkUserId, email, firstName, lastName);
-          console.log(`[AUTH] Created new user with ID ${user.id} for Clerk ID ${clerkUserId}`);
+          user = await storage.createUserWithFirebaseId(firebaseUserId, email, firstName, lastName);
+          console.log(`[AUTH] Created new user with ID ${user.id} for Firebase ID ${firebaseUserId}`);
         } catch (createError: any) {
           // Enhanced error logging
-          console.error(`[AUTH] Failed to create user for Clerk ID ${clerkUserId}:`, createError);
+          console.error(`[AUTH] Failed to create user for Firebase ID ${firebaseUserId}:`, createError);
           console.error("[AUTH] Error details:", {
             message: createError?.message || 'Unknown error',
             name: createError?.name,
@@ -105,7 +97,7 @@ export function createAuthMiddleware(storage: IStorage) { // Use IStorage interf
             console.log(`[AUTH] Possible race condition detected. Trying to fetch user again.`);
             try {
               // Try to fetch the user again in case it was created in another request
-              user = await storage.getUserByClerkId(clerkUserId);
+              user = await storage.getUserByFirebaseId(firebaseUserId);
               if (user) {
                 console.log(`[AUTH] Successfully retrieved user after race condition: ${user.id}`);
               } else {
@@ -127,7 +119,7 @@ export function createAuthMiddleware(storage: IStorage) { // Use IStorage interf
         return res.status(500).json({ message: "Failed to authenticate user" });
       }
       
-      console.log(`[AUTH] Successfully authenticated user ${user.id} (Clerk ID: ${clerkUserId})`);
+      console.log(`[AUTH] Successfully authenticated user ${user.id} (Firebase ID: ${firebaseUserId})`);
       (req as any).user = user;
       
       // Continue to the next middleware or route handler

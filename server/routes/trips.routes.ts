@@ -20,7 +20,36 @@ export function createTripRouter(storage: IStorage): express.Router { // Use ISt
       const userProfile = authReq.user;
       const internalUserId = userProfile.id;
 
-      const trips = await storage.getTripsByUserId(internalUserId);
+      // Parse query parameters for filtering
+      const { startDate, endDate, status } = req.query;
+      
+      // Create filter options
+      const filterOptions: {
+        startDate?: Date;
+        endDate?: Date;
+        status?: string;
+      } = {};
+      
+      // Parse date strings to Date objects if provided
+      if (startDate && typeof startDate === 'string') {
+        filterOptions.startDate = new Date(startDate);
+      }
+      
+      if (endDate && typeof endDate === 'string') {
+        filterOptions.endDate = new Date(endDate);
+      }
+      
+      // Add status filter if provided
+      if (status && typeof status === 'string') {
+        filterOptions.status = status;
+      }
+      
+      // Get trips with filters
+      const trips = await storage.getTripsByUserId(
+        internalUserId,
+        Object.keys(filterOptions).length > 0 ? filterOptions : undefined
+      );
+      
       res.json(trips);
     } catch (error) { next(error); }
   });

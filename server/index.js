@@ -50,7 +50,6 @@ require("dotenv/config"); // Load environment variables FIRST
 var express_1 = require("express");
 var helmet_1 = require("helmet"); // Import helmet
 var serverless_http_1 = require("serverless-http"); // Import serverless-http
-var express_2 = require("@clerk/express"); // Import Clerk middleware
 var routes_1 = require("./routes");
 // import { setupVite, serveStatic, log } from "./vite"; // Vite/Static serving not needed for serverless
 var storage_1 = require("./storage"); // Import the promise
@@ -99,10 +98,8 @@ function initializeApp() {
                         });
                         next();
                     });
-                    // Add Clerk middleware BEFORE routes
-                    // This will attach auth information to req.auth
-                    app.use((0, express_2.clerkMiddleware)());
-                    console.log("Clerk middleware registered.");
+                    // Firebase authentication is now handled by the auth middleware
+                    console.log("Using Firebase authentication");
                     return [4 /*yield*/, storage_1.storage];
                 case 1:
                     storage = _a.sent();

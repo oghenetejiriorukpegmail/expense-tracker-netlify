@@ -1,16 +1,47 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
 import type { Trip, InsertTrip } from "../../shared/schema.js";
-import { eq, and, desc } from 'drizzle-orm';
+import { safeEq, safeAnd, safeDesc, safeLte, safeGte } from '../../shared/drizzle-types';
 
 // Trip methods extracted from SupabaseStorage
 export async function getTrip(db: PostgresJsDatabase<typeof schema>, id: number): Promise<Trip | undefined> {
-  const result = await db.select().from(schema.trips).where(eq(schema.trips.id, id)).limit(1);
+  const result = await db.select().from(schema.trips).where(safeEq(schema.trips.id, id)).limit(1);
   return result[0];
 }
 
-export async function getTripsByUserId(db: PostgresJsDatabase<typeof schema>, userId: number): Promise<Trip[]> {
-  return db.select().from(schema.trips).where(eq(schema.trips.userId, userId)).orderBy(desc(schema.trips.createdAt));
+export async function getTripsByUserId(
+  db: PostgresJsDatabase<typeof schema>,
+  userId: number,
+  options?: {
+    startDate?: Date,
+    endDate?: Date,
+    status?: string
+  }
+): Promise<Trip[]> {
+  // Start with a base query
+  let query = db.select().from(schema.trips);
+  
+  // Build conditions array
+  const conditions: any[] = [safeEq(schema.trips.userId, userId)];
+  
+  // Add date range filtering if provided
+  if (options?.startDate && options?.endDate) {
+    // Filter trips that have any overlap with the selected date range
+    conditions.push(safeLte(schema.trips.startDate, options.endDate));
+    conditions.push(safeGte(schema.trips.endDate, options.startDate));
+  }
+  
+  // Add status filtering if provided
+  if (options?.status) {
+    // Make sure status is a valid enum value
+    const tripStatus = options.status as "Planned" | "InProgress" | "Completed" | "Cancelled";
+    conditions.push(safeEq(schema.trips.status, tripStatus));
+  }
+  
+  // Apply all conditions with a single and() call
+  return query
+    .where(safeAnd(...conditions))
+    .orderBy(safeDesc(schema.trips.createdAt));
 }
 
 export async function createTrip(db: PostgresJsDatabase<typeof schema>, tripData: InsertTrip & { userId: number }): Promise<Trip> {
@@ -52,7 +83,7 @@ export async function updateTrip(db: PostgresJsDatabase<typeof schema>, id: numb
    };
    const result = await db.update(schema.trips)
      .set(dataToUpdate)
-     .where(eq(schema.trips.id, id))
+     .where(safeEq(schema.trips.id, id))
      .returning();
    if (result.length === 0) {
       throw new Error(`Trip with ID ${id} not found`);
@@ -64,15 +95,15 @@ export async function deleteTrip(db: PostgresJsDatabase<typeof schema>, id: numb
   await db.transaction(async (tx) => {
       const trip = await tx.select({ name: schema.trips.name, userId: schema.trips.userId })
                            .from(schema.trips)
-                           .where(eq(schema.trips.id, id))
+                           .where(safeEq(schema.trips.id, id))
                            .limit(1);
 
       if (!trip[0]) {
           throw new Error(`Trip with ID ${id} not found`);
       }
       // Delete associated expenses first using the internal user ID
-      await tx.delete(schema.expenses).where(and(eq(schema.expenses.userId, trip[0].userId), eq(schema.expenses.tripName, trip[0].name)));
+      await tx.delete(schema.expenses).where(safeAnd(safeEq(schema.expenses.userId, trip[0].userId), safeEq(schema.expenses.tripName, trip[0].name)));
       // Now delete the trip
-      await tx.delete(schema.trips).where(eq(schema.trips.id, id));
+      await tx.delete(schema.trips).where(safeEq(schema.trips.id, id));
   });
 }

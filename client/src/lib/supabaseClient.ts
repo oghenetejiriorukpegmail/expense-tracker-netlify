@@ -14,7 +14,16 @@ if (!supabaseAnonKey) {
   throw new Error("Supabase Anon Key is not configured. Please check your .env file.");
 }
 
-// Create and export the Supabase client instance
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create and export the Supabase client instance with auth configuration
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
 
-console.log("Supabase client initialized for client-side.");
+// Export auth-related functions for easier access
+export const auth = supabase.auth
+
+console.log("Supabase client initialized for client-side with auth configuration.");

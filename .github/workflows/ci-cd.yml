@@ -1,0 +1,68 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check TypeScript
+      run: npm run check
+    
+    - name: Build
+      run: npm run build:all
+    
+    - name: Run tests
+      run: npm test
+      
+    - name: Cache build artifacts
+      uses: actions/cache@v3
+      with:
+        path: |
+          client/dist
+          dist-server
+        key: ${{ runner.os }}-build-${{ github.sha }}
+  
+  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Restore build artifacts
+      uses: actions/cache@v3
+      with:
+        path: |
+          client/dist
+          dist-server
+        key: ${{ runner.os }}-build-${{ github.sha }}
+    
+    - name: Deploy to Netlify
+      uses: netlify/actions/cli@master
+      with:
+        args: deploy --prod
+      env:
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

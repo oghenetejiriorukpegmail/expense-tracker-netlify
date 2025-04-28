@@ -1,18 +1,20 @@
-import { useAuth } from "@clerk/clerk-react"; // Import from Clerk
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
+import { useAuth } from "./authContext";
+import { ComponentType, LazyExoticComponent } from "react";
 
+// Update the component prop type to accept both regular and lazy-loaded components
 export function ProtectedRoute({
   path,
   component: Component,
 }: {
   path: string;
-  component: () => React.JSX.Element;
+  component: ComponentType<any> | LazyExoticComponent<ComponentType<any>>;
 }) {
-  // Use Clerk's useAuth hook
+  // Use our custom useAuth hook
   const { isLoaded, isSignedIn } = useAuth();
 
-  // Show loading indicator while Clerk is initializing
+  // Show loading indicator while auth is initializing
   if (!isLoaded) {
     return (
       <Route path={path}>

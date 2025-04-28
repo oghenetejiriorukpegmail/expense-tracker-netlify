@@ -1,0 +1,7 @@
+{
+  "ocrApiKeys": {
+    "gemini": ""
+  },
+  "defaultOcrMethod": "gemini",
+  "ocrTemplate": "travel"
+}

@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared/*": ["./shared/*"],
+      "@client/*": ["./client/src/*"],
+      "@server/*": ["./server/*"]
+    }
+  },
+  "include": [
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "client/src/**/*.ts",
+    "client/src/**/*.tsx",
+    "server/**/*.ts",
+    "shared/**/*.ts"
+  ]
+}

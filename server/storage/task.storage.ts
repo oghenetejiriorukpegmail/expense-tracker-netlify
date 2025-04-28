@@ -1,12 +1,15 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
 import type { BackgroundTask, InsertBackgroundTask } from "../../shared/schema.js";
-import { eq, desc } from 'drizzle-orm';
+import { safeEq, safeDesc } from '../../shared/drizzle-types';
 
 // Background Task methods extracted from SupabaseStorage
 export async function createBackgroundTask(db: PostgresJsDatabase<typeof schema>, taskData: InsertBackgroundTask): Promise<BackgroundTask> {
   try {
     const result = await db.insert(schema.backgroundTasks).values(taskData).returning();
+    if (!result[0]) {
+      throw new Error("Failed to create background task: No result returned");
+    }
     return result[0];
   } catch (error) {
     console.error("[SupabaseStorage] Error creating background task:", error);
@@ -37,7 +40,7 @@ export async function updateBackgroundTaskStatus(db: PostgresJsDatabase<typeof s
     };
     const res = await db.update(schema.backgroundTasks)
       .set(updateData)
-      .where(eq(schema.backgroundTasks.id, id))
+      .where(safeEq(schema.backgroundTasks.id, id))
       .returning();
     return res[0];
   } catch (error) {
@@ -50,7 +53,7 @@ export async function updateBackgroundTaskStatus(db: PostgresJsDatabase<typeof s
 
 export async function getBackgroundTaskById(db: PostgresJsDatabase<typeof schema>, id: number): Promise<BackgroundTask | undefined> {
   try {
-    const result = await db.select().from(schema.backgroundTasks).where(eq(schema.backgroundTasks.id, id)).limit(1);
+    const result = await db.select().from(schema.backgroundTasks).where(safeEq(schema.backgroundTasks.id, id)).limit(1);
     return result[0];
   } catch (error) {
     console.error("[SupabaseStorage] Error getting background task by ID:", error);
@@ -61,8 +64,8 @@ export async function getBackgroundTaskById(db: PostgresJsDatabase<typeof schema
 export async function getBackgroundTasksByUserId(db: PostgresJsDatabase<typeof schema>, userId: number): Promise<BackgroundTask[]> {
   try {
     return db.select().from(schema.backgroundTasks)
-               .where(eq(schema.backgroundTasks.userId, userId))
-               .orderBy(desc(schema.backgroundTasks.createdAt));
+               .where(safeEq(schema.backgroundTasks.userId, userId))
+               .orderBy(safeDesc(schema.backgroundTasks.createdAt));
   } catch (error) {
     console.error("[SupabaseStorage] Error getting background tasks by user ID:", error);
     return []; // Return an empty array if there's an error

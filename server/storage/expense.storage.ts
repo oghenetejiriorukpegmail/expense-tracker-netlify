@@ -1,25 +1,25 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
 import type { Expense, InsertExpense } from "../../shared/schema.js";
-import { eq, and, desc } from 'drizzle-orm';
+import { safeEq, safeAnd, safeDesc } from '../../shared/drizzle-types';
 
 // Expense methods extracted from SupabaseStorage
 export async function getExpense(db: PostgresJsDatabase<typeof schema>, id: number): Promise<Expense | undefined> {
-   const result = await db.select().from(schema.expenses).where(eq(schema.expenses.id, id)).limit(1);
+   const result = await db.select().from(schema.expenses).where(safeEq(schema.expenses.id, id)).limit(1);
    return result[0];
 }
 
 export async function getExpensesByUserId(db: PostgresJsDatabase<typeof schema>, userId: number): Promise<Expense[]> {
   const results = await db.select().from(schema.expenses)
-                              .where(eq(schema.expenses.userId, userId))
-                              .orderBy(desc(schema.expenses.date));
+                              .where(safeEq(schema.expenses.userId, userId))
+                              .orderBy(safeDesc(schema.expenses.date));
   return results;
 }
 
 export async function getExpensesByTripName(db: PostgresJsDatabase<typeof schema>, userId: number, tripName: string): Promise<Expense[]> {
   const results = await db.select().from(schema.expenses)
-    .where(and(eq(schema.expenses.userId, userId), eq(schema.expenses.tripName, tripName)))
-    .orderBy(desc(schema.expenses.date));
+    .where(safeAnd(safeEq(schema.expenses.userId, userId), safeEq(schema.expenses.tripName, tripName)))
+    .orderBy(safeDesc(schema.expenses.date));
    return results;
 }
 
@@ -28,9 +28,9 @@ export async function createExpense(db: PostgresJsDatabase<typeof schema>, expen
    for (const field of requiredFields) {
       if (expenseData[field] === undefined || expenseData[field] === null) {
           if (field === 'cost' && typeof expenseData.cost !== 'string') { // Check if cost is string
-               throw new Error(`Missing or invalid required expense field: ${field}`);
+               throw new Error(`Missing or invalid required expense field: ${String(field)}`);
           } else if (field !== 'cost') {
-               throw new Error(`Missing required expense field: ${field}`);
+               throw new Error(`Missing required expense field: ${String(field)}`);
           }
       }
    }
@@ -66,7 +66,7 @@ export async function updateExpense(db: PostgresJsDatabase<typeof schema>, id: n
 
   const result = await db.update(schema.expenses)
     .set(dataToUpdate)
-    .where(eq(schema.expenses.id, id))
+    .where(safeEq(schema.expenses.id, id))
     .returning();
 
   if (result.length === 0) {
@@ -76,7 +76,7 @@ export async function updateExpense(db: PostgresJsDatabase<typeof schema>, id: n
 }
 
 export async function deleteExpense(db: PostgresJsDatabase<typeof schema>, id: number): Promise<void> {
-  const result = await db.delete(schema.expenses).where(eq(schema.expenses.id, id)).returning({ id: schema.expenses.id });
+  const result = await db.delete(schema.expenses).where(safeEq(schema.expenses.id, id)).returning({ id: schema.expenses.id });
    if (result.length === 0) {
       console.warn(`Attempted to delete non-existent expense with ID ${id}`);
    }
@@ -90,7 +90,7 @@ export async function updateExpenseStatus(db: PostgresJsDatabase<typeof schema>,
   };
   const result = await db.update(schema.expenses)
     .set(updateData)
-    .where(eq(schema.expenses.id, id))
+    .where(safeEq(schema.expenses.id, id))
     .returning();
   return result[0];
 }

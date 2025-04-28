@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express, storage: IStorage): Promise<S
     // Log storage instance details to verify it's properly initialized
     // Log storage instance details to verify it's properly initialized
     // Check if it has a specific method from the interface to be more certain
-    console.log("[ROUTES] Storage instance received:", storage && typeof (storage as any).getUserByClerkId === 'function' ? "Valid IStorage instance" : "INVALID or UNDEFINED");
+    console.log("[ROUTES] Storage instance received:", storage && typeof (storage as any).getUserByFirebaseId === 'function' ? "Valid IStorage instance" : "INVALID or UNDEFINED");
     
     // Clerk middleware is applied in server/index.ts
     

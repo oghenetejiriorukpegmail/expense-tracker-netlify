@@ -37,30 +37,131 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAuthMiddleware = createAuthMiddleware;
-var express_1 = require("@clerk/express");
+var firebase_admin_1 = require("firebase-admin");
+var app_1 = require("firebase-admin/app");
+// Initialize Firebase Admin if not already initialized
+if (!(0, app_1.getApps)().length) {
+    // Initialize the Firebase Admin SDK
+    var serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || "{}");
+    if (!serviceAccount.project_id) {
+        console.error("[AUTH] CRITICAL ERROR: Firebase service account not properly configured");
+    }
+    else {
+        (0, app_1.initializeApp)({
+            credential: (0, app_1.cert)(serviceAccount),
+        });
+    }
+}
 // Create a middleware function that verifies authentication and attaches user data
 function createAuthMiddleware(storage) {
     var _this = this;
     return function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-        var clerkUserId, user, error_1;
+        var authHeader, token, decodedToken, tokenError_1, firebaseUserId, user, dbError_1, email, name, firstName, lastName, createError_1, retryError_1, error_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    clerkUserId = (0, express_1.getAuth)(req).userId;
-                    // If no Clerk user ID, return unauthorized
-                    if (!clerkUserId) {
-                        console.log("Auth: No Authorization header found or not Bearer.");
+                    _a.trys.push([0, 9, , 10]);
+                    console.log("[AUTH] Processing request:", req.method, req.path);
+                    // Verify storage is valid
+                    if (!storage) {
+                        console.error("[AUTH] CRITICAL ERROR: Storage is undefined in auth middleware");
+                        return [2 /*return*/, res.status(500).json({ message: "Server configuration error: Storage not initialized" })];
+                    }
+                    authHeader = req.headers.authorization;
+                    // If no auth header, return unauthorized
+                    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                        console.log("[AUTH] No Authorization header found or not Bearer.");
                         return [2 /*return*/, res.status(401).json({ message: "Unauthorized: Authorization header missing or invalid" })];
                     }
-                    return [4 /*yield*/, storage.getUserByClerkId(clerkUserId)];
+                    token = authHeader.split('Bearer ')[1];
+                    decodedToken = void 0;
+                    _a.label = 1;
                 case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, firebase_admin_1.auth().verifyIdToken(token)];
+                case 2:
+                    decodedToken = _a.sent();
+                    return [3 /*break*/, 4];
+                case 3:
+                    tokenError_1 = _a.sent();
+                    console.error("[AUTH] Invalid Firebase token:", tokenError_1);
+                    return [2 /*return*/, res.status(401).json({ message: "Unauthorized: Invalid token" })];
+                case 4:
+                    firebaseUserId = decodedToken.uid;
+                    console.log("[AUTH] Authenticated with Firebase user ID:", firebaseUserId);
+                    console.log("[AUTH] Fetching user from database with Firebase ID:", firebaseUserId);
+                    user = void 0;
+                    _a.label = 5;
+                case 5:
+                    _a.trys.push([5, 7, , 8]);
+                    return [4 /*yield*/, storage.getUserByFirebaseId(firebaseUserId)];
+                case 6:
                     user = _a.sent();
-                    // If user not found in our database, return unauthorized
+                    console.log("[AUTH] User lookup result:", user ? "Found user with ID ".concat(user.id) : "User not found");
+                    return [3 /*break*/, 8];
+                case 7:
+                    dbError_1 = _a.sent();
+                    console.error("[AUTH] Database error during user lookup:", dbError_1);
+                    return [2 /*return*/, res.status(500).json({ message: "Database error during authentication" })];
+                case 8:
+                    // If user not found in our database, create a new user
                     if (!user) {
-                        console.log("Auth: User with Clerk ID ".concat(clerkUserId, " not found in database."));
-                        return [2 /*return*/, res.status(401).json({ message: "Unauthorized: User not found in database" })];
+                        console.log("[AUTH] User with Firebase ID ".concat(firebaseUserId, " not found in database. Creating new user."));
+                        // Extract user information from the decoded token
+                        email = decodedToken.email || '';
+                        name = decodedToken.name || '';
+                        // Split name into first and last name if available
+                        firstName = '';
+                        lastName = '';
+                        if (name) {
+                            var nameParts = name.split(' ');
+                            firstName = nameParts[0] || '';
+                            lastName = nameParts.slice(1).join(' ') || '';
+                        }
+                        // Create a new user with the Firebase ID
+                        console.log("[AUTH] About to create user with Firebase ID ".concat(firebaseUserId));
+                        try {
+                            user = storage.createUserWithFirebaseId(firebaseUserId, email, firstName, lastName);
+                            console.log("[AUTH] Created new user with ID ".concat(user.id, " for Firebase ID ").concat(firebaseUserId));
+                        }
+                        catch (createError_1) {
+                            // Enhanced error logging
+                            console.error("[AUTH] Failed to create user for Firebase ID ".concat(firebaseUserId, ":"), createError_1);
+                            console.error("[AUTH] Error details:", {
+                                message: createError_1 === null || createError_1 === void 0 ? void 0 : createError_1.message || 'Unknown error',
+                                name: createError_1 === null || createError_1 === void 0 ? void 0 : createError_1.name,
+                                stack: createError_1 === null || createError_1 === void 0 ? void 0 : createError_1.stack,
+                                code: createError_1 === null || createError_1 === void 0 ? void 0 : createError_1.code
+                            });
+                            // Check if it's a duplicate key error (user might have been created in a race condition)
+                            if ((createError_1 === null || createError_1 === void 0 ? void 0 : createError_1.message.includes('duplicate key')) || (createError_1 === null || createError_1 === void 0 ? void 0 : createError_1.code) === '23505') {
+                                console.log("[AUTH] Possible race condition detected. Trying to fetch user again.");
+                                try {
+                                    // Try to fetch the user again in case it was created in another request
+                                    user = storage.getUserByFirebaseId(firebaseUserId);
+                                    if (user) {
+                                        console.log("[AUTH] Successfully retrieved user after race condition: ".concat(user.id));
+                                    }
+                                    else {
+                                        return [2 /*return*/, res.status(500).json({ message: "Failed to create or retrieve user account" })];
+                                    }
+                                }
+                                catch (retryError_1) {
+                                    console.error("[AUTH] Failed to retrieve user after race condition:", retryError_1);
+                                    return [2 /*return*/, res.status(500).json({ message: "Failed to create user account (duplicate key)" })];
+                                }
+                            }
+                            else {
+                                return [2 /*return*/, res.status(500).json({ message: "Failed to create user account" })];
+                            }
+                        }
                     }
+                    // Attach the user to the request object for use in route handlers
+                    if (!user) {
+                        console.error("[AUTH] CRITICAL ERROR: User is still undefined after all attempts");
+                        return [2 /*return*/, res.status(500).json({ message: "Failed to authenticate user" })];
+                    }
+                    console.log("[AUTH] Successfully authenticated user ".concat(user.id, " (Firebase ID: ").concat(firebaseUserId, ")"));
                     // Attach the user to the request object for use in route handlers
                     req.user = user;
                     // Continue to the next middleware or route handler

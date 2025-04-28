@@ -1,0 +1,25 @@
+{
+  "name": "expense-tracker-tests",
+  "version": "1.0.0",
+  "description": "Tests for the Expense Tracker application",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --require ts-node/register --timeout 10000 './**/*.test.ts'",
+    "test:watch": "mocha --require ts-node/register --watch --timeout 10000 './**/*.test.ts'"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "drizzle-orm": "^0.27.0",
+    "postgres": "^3.3.5",
+    "@supabase/supabase-js": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.16.3",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  }
+}

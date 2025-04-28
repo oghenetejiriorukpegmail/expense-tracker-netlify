@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import type { PublicUser, BackgroundTask } from "../../shared/schema.js"; // Use relative path with .js extension
-import { processReceiptWithOCR } from "../util/ocr.js"; // Import OCR utility
+import { ocrOrchestrator } from "../util/ocr-orchestrator.js"; // Import OCR orchestrator
 
 // Define request type with user property
 interface AuthenticatedRequest extends Request {
@@ -38,6 +38,10 @@ export function createBackgroundProcessorRouter(storage: IStorage): express.Rout
 
       // Process the oldest pending task
       const task = pendingTasks[pendingTasks.length - 1]; // Get the oldest task (last in the array)
+      if (!task) {
+        return res.json({ message: "Error retrieving pending task" });
+      }
+      
       console.log(`Processing background task ${task.id} of type ${task.type}`);
 
       // Update task status to processing
@@ -63,21 +67,23 @@ export function createBackgroundProcessorRouter(storage: IStorage): express.Rout
 
           // Get the receipt file
           const fileData = await storage.downloadFile(receiptPath);
-          if (!fileData || !fileData.buffer) {
+          if (!fileData || !fileData.data) {
             throw new Error(`Receipt file ${receiptPath} not found or empty`);
           }
 
           // Process the receipt with OCR
           console.log(`Processing receipt ${receiptPath} with OCR using template ${template || 'general'}`);
           
-          // Get OCR provider from environment or use default
-          const ocrProvider = process.env.OCR_PROVIDER as 'gemini' | 'openai' | 'claude' | 'openrouter' || 'gemini';
-          
-          const ocrResult = await processReceiptWithOCR(
-            fileData.buffer,
+          // Use the OCR orchestrator for better performance
+          const ocrResult = await ocrOrchestrator.processReceipt(
+            fileData.data,
             fileData.contentType || 'application/pdf',
-            ocrProvider,
-            template || 'general'
+            {
+              template: (template as any) || 'general',
+              useCache: true,
+              preprocessImage: true,
+              maxRetries: 2
+            }
           );
 
           if (ocrResult.success) {

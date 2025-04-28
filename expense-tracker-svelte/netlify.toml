@@ -1,0 +1,47 @@
+[build]
+  command = "npm run build"
+  publish = ".svelte-kit/output"
+  functions = "netlify/functions"
+
+[dev]
+  command = "npm run dev"
+  port = 3000
+  targetPort = 5173
+
+# Handle SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Environment variable configuration
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--no-audit --production"
+
+# Production context settings
+[context.production]
+  command = "npm run build"
+
+# Deploy preview context settings
+[context.deploy-preview]
+  command = "npm run build"
+
+# Branch deploy context settings
+[context.branch-deploy]
+  command = "npm run build"
+
+# Function settings
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["better-sqlite3", "pg-native"]
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.supabase.co;"

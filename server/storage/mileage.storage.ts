@@ -1,25 +1,26 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
 import type { MileageLog, InsertMileageLog } from "../../shared/schema.js";
-import { eq, and, desc, gte, lte, asc } from 'drizzle-orm';
+import { safeEq, safeAnd, safeDesc, safeGte, safeLte } from '../../shared/drizzle-types';
+import { asc, desc } from 'drizzle-orm';
 
 // Mileage Log methods extracted from SupabaseStorage
 export async function getMileageLogById(db: PostgresJsDatabase<typeof schema>, id: number): Promise<MileageLog | undefined> {
-  const result = await db.select().from(schema.mileageLogs).where(eq(schema.mileageLogs.id, id)).limit(1);
+  const result = await db.select().from(schema.mileageLogs).where(safeEq(schema.mileageLogs.id, id)).limit(1);
   return result[0];
 }
 
 export async function getMileageLogsByUserId(db: PostgresJsDatabase<typeof schema>, userId: number, options?: { tripId?: number; startDate?: string; endDate?: string; limit?: number; offset?: number; sortBy?: string; sortOrder?: 'asc' | 'desc' }): Promise<MileageLog[]> {
-  const conditions = [eq(schema.mileageLogs.userId, userId)];
+  const conditions = [safeEq(schema.mileageLogs.userId, userId)];
 
   if (options?.tripId) {
-    conditions.push(eq(schema.mileageLogs.tripId, options.tripId));
+    conditions.push(safeEq(schema.mileageLogs.tripId, options.tripId));
   }
   if (options?.startDate) {
-    conditions.push(gte(schema.mileageLogs.tripDate, new Date(options.startDate)));
+    conditions.push(safeGte(schema.mileageLogs.tripDate, new Date(options.startDate)));
   }
   if (options?.endDate) {
-    conditions.push(lte(schema.mileageLogs.tripDate, new Date(options.endDate)));
+    conditions.push(safeLte(schema.mileageLogs.tripDate, new Date(options.endDate)));
   }
 
   // Determine sorting
@@ -30,7 +31,7 @@ export async function getMileageLogsByUserId(db: PostgresJsDatabase<typeof schem
   // Build the query with all conditions at once
   const query = db.select()
     .from(schema.mileageLogs)
-    .where(and(...conditions))
+    .where(safeAnd(...conditions))
     .orderBy(sortOrderFunc(sortColumn));
   
   // Apply limit and offset if provided
@@ -89,7 +90,7 @@ export async function updateMileageLog(db: PostgresJsDatabase<typeof schema>, id
 
   const result = await db.update(schema.mileageLogs)
     .set(dataToUpdate)
-    .where(eq(schema.mileageLogs.id, id))
+    .where(safeEq(schema.mileageLogs.id, id))
     .returning();
 
   if (result.length === 0) {
@@ -99,7 +100,7 @@ export async function updateMileageLog(db: PostgresJsDatabase<typeof schema>, id
 }
 
 export async function deleteMileageLog(db: PostgresJsDatabase<typeof schema>, id: number): Promise<void> {
-  const result = await db.delete(schema.mileageLogs).where(eq(schema.mileageLogs.id, id)).returning({ id: schema.mileageLogs.id });
+  const result = await db.delete(schema.mileageLogs).where(safeEq(schema.mileageLogs.id, id)).returning({ id: schema.mileageLogs.id });
   if (result.length === 0) {
     console.warn(`Attempted to delete non-existent mileage log with ID ${id}`);
   }

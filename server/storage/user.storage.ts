@@ -1,21 +1,23 @@
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../shared/schema.js';
 import type { User, PublicUser, InsertUser } from "../../shared/schema.js";
-import { eq } from 'drizzle-orm';
+import { safeEq } from '../../shared/drizzle-types';
 import { v4 as uuidv4 } from 'uuid';
 
 // User methods extracted from SupabaseStorage
 export async function getUserById(db: PostgresJsDatabase<typeof schema>, id: number): Promise<User | undefined> {
-  const result = await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1);
+  const result = await db.select().from(schema.users).where(safeEq(schema.users.id, id)).limit(1);
   return result[0];
 }
 
 export async function getUserByUsername(db: PostgresJsDatabase<typeof schema>, username: string): Promise<User | undefined> {
-  const result = await db.select().from(schema.users).where(eq(schema.users.username, username)).limit(1);
+  const result = await db.select().from(schema.users).where(safeEq(schema.users.username, username)).limit(1);
   return result[0];
 }
 
-export async function getUserByClerkId(db: PostgresJsDatabase<typeof schema>, clerkUserId: string): Promise<PublicUser | undefined> {
+
+// Get user by Firebase ID
+export async function getUserByFirebaseId(db: PostgresJsDatabase<typeof schema>, firebaseUserId: string): Promise<PublicUser | undefined> {
   const result = await db.select({
     id: schema.users.id,
     authUserId: schema.users.authUserId,
@@ -26,7 +28,7 @@ export async function getUserByClerkId(db: PostgresJsDatabase<typeof schema>, cl
     phoneNumber: schema.users.phoneNumber,
     bio: schema.users.bio,
     createdAt: schema.users.createdAt,
-  }).from(schema.users).where(eq(schema.users.authUserId, clerkUserId)).limit(1);
+  }).from(schema.users).where(safeEq(schema.users.authUserId, firebaseUserId)).limit(1);
 
   const userFromDb = result[0];
   if (!userFromDb) {
@@ -48,7 +50,7 @@ export async function getUserByClerkId(db: PostgresJsDatabase<typeof schema>, cl
 }
 
 export async function getUserByEmail(db: PostgresJsDatabase<typeof schema>, email: string): Promise<User | undefined> {
-  const result = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
+  const result = await db.select().from(schema.users).where(safeEq(schema.users.email, email)).limit(1);
   return result[0];
 }
 
@@ -62,7 +64,7 @@ export async function updateUserProfile(db: PostgresJsDatabase<typeof schema>, u
 
   const result = await db.update(schema.users)
     .set(updateData)
-    .where(eq(schema.users.id, userId))
+    .where(safeEq(schema.users.id, userId))
     .returning();
 
   if (result.length === 0) {
@@ -71,12 +73,13 @@ export async function updateUserProfile(db: PostgresJsDatabase<typeof schema>, u
   return result[0];
 }
 
-// Create a new user with Clerk ID
-export async function createUserWithClerkId(db: PostgresJsDatabase<typeof schema>, clerkUserId: string, email: string = '', firstName: string = '', lastName: string = ''): Promise<PublicUser> {
+
+// Create a new user with Firebase ID
+export async function createUserWithFirebaseId(db: PostgresJsDatabase<typeof schema>, firebaseUserId: string, email: string = '', firstName: string = '', lastName: string = ''): Promise<PublicUser> {
   // Generate a random username based on the email or a UUID
   const username = email ? email.split('@')[0] + '-' + Math.floor(Math.random() * 10000) : 'user-' + uuidv4().substring(0, 8);
   
-  // Create a random password (not used with Clerk auth, but required by schema)
+  // Create a random password (not used with Firebase auth, but required by schema)
   const password = uuidv4();
   
   const userData = {
@@ -86,14 +89,14 @@ export async function createUserWithClerkId(db: PostgresJsDatabase<typeof schema
     firstName: firstName || '',
     lastName: lastName || '',
     phoneNumber: '',
-    authUserId: clerkUserId,
+    authUserId: firebaseUserId,
   };
   
   // DIAGNOSTIC LOG: Log the user data being inserted
-  console.log("DIAGNOSTIC - User creation data:", {
+  console.log("DIAGNOSTIC - User creation data (Firebase):", {
     attemptedColumns: Object.keys(userData),
     passwordIncluded: userData.hasOwnProperty('password'),
-    clerkUserId,
+    firebaseUserId,
     username,
     email: userData.email
   });
@@ -114,7 +117,7 @@ export async function createUserWithClerkId(db: PostgresJsDatabase<typeof schema
     return publicUser as PublicUser;
   } catch (error: any) {
     // DIAGNOSTIC LOG: Enhanced error logging
-    console.error("DIAGNOSTIC - User creation error details:", {
+    console.error("DIAGNOSTIC - User creation error details (Firebase):", {
       error: error?.toString?.() || 'Unknown error',
       errorObject: JSON.stringify(error, Object.getOwnPropertyNames(error || {})),
       query: error?.query || 'Query not available',

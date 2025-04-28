@@ -1,23 +1,29 @@
 {
-  "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
-  "compilerOptions": {
-    "incremental": true,
-    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
-    "noEmit": true,
-    "module": "ESNext",
-    "strict": true,
-    "lib": ["esnext", "dom", "dom.iterable"],
-    "jsx": "preserve",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "types": ["node", "vite/client"],
-    "paths": {
-      "@/*": ["./client/src/*"],
-      "@shared/*": ["./shared/*"]
-    }
-  }
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "bundler",
+		"target": "ESNext",
+		"module": "ESNext",
+		"isolatedModules": true,
+		"types": ["vite/client"]
+	},
+	"include": [
+		".svelte-kit/ambient.d.ts",
+		".svelte-kit/types/**/$types.d.ts",
+		"vite.config.ts",
+		"src/**/*.js",
+		"src/**/*.ts",
+		"src/**/*.svelte",
+		"tests/**/*.js",
+		"tests/**/*.ts",
+		"tests/**/*.svelte"
+	]
 }

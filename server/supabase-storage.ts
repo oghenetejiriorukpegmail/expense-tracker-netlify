@@ -102,8 +102,8 @@ class SupabaseStorage extends IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> { // Add type hints
     return userStorage.getUserByUsername(this.db, username);
   }
-  async getUserByClerkId(clerkUserId: string): Promise<PublicUser | undefined> { // Changed return type to PublicUser
-    return userStorage.getUserByClerkId(this.db, clerkUserId);
+  async getUserByFirebaseId(firebaseUserId: string): Promise<PublicUser | undefined> { // Changed return type to PublicUser
+    return userStorage.getUserByFirebaseId(this.db, firebaseUserId);
   }
   async getUserByEmail(email: string): Promise<User | undefined> { // Add type hints
     return userStorage.getUserByEmail(this.db, email);
@@ -112,8 +112,8 @@ class SupabaseStorage extends IStorage {
     return userStorage.updateUserProfile(this.db, userId, profileData);
   }
   
-  async createUserWithClerkId(clerkUserId: string, email = '', firstName = '', lastName = ''): Promise<PublicUser> { // Changed return type to PublicUser
-    return userStorage.createUserWithClerkId(this.db, clerkUserId, email, firstName, lastName);
+  async createUserWithFirebaseId(firebaseUserId: string, email = '', firstName = '', lastName = ''): Promise<PublicUser> { // Changed return type to PublicUser
+    return userStorage.createUserWithFirebaseId(this.db, firebaseUserId, email, firstName, lastName);
   }
 
   // --- Trip methods ---

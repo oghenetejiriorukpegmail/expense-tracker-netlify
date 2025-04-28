@@ -1,47 +1,73 @@
 import { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
-import { processReceiptWithOCR } from "../../server/util/ocr"; // Correct function import
+import { ocrOrchestrator } from "../../server/util/ocr-orchestrator"; // Import the OCR orchestrator
 import { SupabaseStorage } from "../../server/supabase-storage"; // Import the class
+import * as fileStorage from "../../server/storage/file.storage"; // Import direct file storage functions
+import * as expenseStorage from "../../server/storage/expense.storage"; // Import direct expense storage functions
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from '../../shared/schema.js';
 
-// TODO: Define the expected payload structure
+// Define the expected payload structure
 interface OcrPayload {
   filePath: string; // Path within the Supabase bucket
   userId: string;   // ID of the user who uploaded the file
   mimeType: string; // Mime type of the uploaded file (e.g., 'image/jpeg', 'application/pdf')
   expenseId: number; // ID of the placeholder expense record to update
+  template?: "general" | "travel" | "odometer"; // Optional template type
 }
 
 const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
   // Netlify automatically loads environment variables from the UI or netlify.toml
+  console.log("OCR Function started");
 
   if (event.httpMethod !== 'POST' || !event.body) {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  let storage: SupabaseStorage | null = null;
+  let db: any = null;
+  let client: any = null;
   let payload: OcrPayload | null = null; // Declare payload outside try
 
   try {
     payload = JSON.parse(event.body) as OcrPayload; // Assign inside try
     console.log("Processing OCR for payload:", payload);
 
-    // Initialize Supabase Storage
-    storage = await SupabaseStorage.initialize();
+    // Initialize database connection
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error("DATABASE_URL environment variable is not set");
+    }
+    
+    client = postgres(databaseUrl, { max: 1 });
+    db = drizzle(client, { schema });
 
     // 1. Download the file from Supabase Storage
-    // Assuming filePath is the path within the Supabase bucket
-    const fileBuffer = await storage.downloadFile(payload.filePath);
+    console.log(`Downloading file from path: ${payload.filePath}`);
+    // Use direct file storage function to get a Buffer
+    const fileBuffer = await fileStorage.downloadFile(payload.filePath);
+    console.log(`File downloaded successfully, size: ${fileBuffer.length} bytes`);
 
-    // 2. Process the receipt using the OCR utility
-    // Use the mimeType passed in the payload
-    const ocrResult = await processReceiptWithOCR(fileBuffer, payload.mimeType, "gemini", "general"); // Using 'general' template for now
+    // 2. Process the receipt using the OCR orchestrator
+    console.log(`Processing receipt with OCR orchestrator, mime type: ${payload.mimeType}`);
+    const ocrResult = await ocrOrchestrator.processReceipt(
+      fileBuffer,
+      payload.mimeType,
+      {
+        template: payload.template || "general",
+        useCache: true,
+        preprocessImage: true,
+        maxRetries: 2
+      }
+    );
+    console.log(`OCR processing completed, success: ${ocrResult.success}, provider: ${ocrResult.provider}`);
 
     const expenseId = payload.expenseId;
     const errorMessage = ocrResult.error || "No structured data extracted";
 
     if (!ocrResult.success || !ocrResult.extractedData) {
       console.error(`OCR processing failed for expense ${expenseId}:`, errorMessage);
-      // Update the placeholder expense status to failed using updateExpense
-      await storage.updateExpense(expenseId, { status: 'ocr_failed', ocrError: errorMessage });
+      // Update the placeholder expense status to failed using updateExpenseStatus
+      await expenseStorage.updateExpenseStatus(db, expenseId, 'ocr_failed', errorMessage);
       return {
         statusCode: 200, // Function itself succeeded, but OCR failed - return 200 so Netlify doesn't retry
         body: JSON.stringify({ message: "OCR processing failed.", error: errorMessage }),
@@ -87,11 +113,10 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
         // tripName: String(ocrResult.extractedData.tripName || 'Default Trip'),
         comments: `Processed via OCR. Raw: ${JSON.stringify(ocrResult.extractedData)}`, // Overwrite comments or append?
         status: 'complete', // Set status to complete
-        ocrError: null, // Clear any previous error
         // We don't update receiptPath here, it was set when placeholder was created
       };
 
-      const updatedExpense = await storage.updateExpense(expenseId, updateData);
+      const updatedExpense = await expenseStorage.updateExpense(db, expenseId, updateData);
       if (!updatedExpense) {
           throw new Error(`Failed to find expense with ID ${expenseId} to update after OCR.`);
       }
@@ -104,8 +129,8 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     } catch (dbError) {
         console.error(`Database error updating expense ${expenseId} with OCR result:`, dbError);
         const dbErrorMessage = dbError instanceof Error ? dbError.message : "Unknown database error";
-        // Update status to failed using updateExpense
-        await storage.updateExpense(expenseId, { status: 'ocr_failed', ocrError: `DB Error: ${dbErrorMessage}` });
+        // Update status to failed using updateExpenseStatus
+        await expenseStorage.updateExpenseStatus(db, expenseId, 'ocr_failed', `DB Error: ${dbErrorMessage}`);
         return {
             statusCode: 200, // Function succeeded, DB update failed
             body: JSON.stringify({ message: "OCR processed but failed to save results to database.", error: dbErrorMessage }),
@@ -115,20 +140,25 @@ const handler: Handler = async (event: HandlerEvent, context: HandlerContext) =>
     console.error("Error processing OCR background function:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Unhandled error in OCR function:", error);
-    // Attempt to update status to failed if payload and storage were initialized
-    if (payload && payload.expenseId && storage) {
+    // Attempt to update status to failed if payload and db were initialized
+    if (payload && payload.expenseId && db) {
         try {
-            await storage.updateExpense(payload.expenseId, { status: 'ocr_failed', ocrError: `Unhandled Function Error: ${errorMessage}` });
+            await expenseStorage.updateExpenseStatus(db, payload.expenseId, 'ocr_failed', `Unhandled Function Error: ${errorMessage}`);
         } catch (statusUpdateError) {
             console.error(`Failed to update expense status for ${payload.expenseId} after unhandled error:`, statusUpdateError);
         }
     } else {
-        console.error("Cannot update expense status: payload or storage not initialized before error.");
+        console.error("Cannot update expense status: payload or db not initialized before error.");
     }
     return {
       statusCode: 200, // Return 200 even on unhandled error to prevent retries, error logged in DB if possible
       body: JSON.stringify({ message: "Unhandled error during OCR processing.", error: errorMessage }),
     };
+  } finally {
+    // Close the database connection
+    if (client) {
+      await client.end();
+    }
   }
 };
 

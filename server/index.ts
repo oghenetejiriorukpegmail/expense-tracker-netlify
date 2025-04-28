@@ -5,7 +5,6 @@ require('dotenv/config');
 const express = require("express");
 const helmet = require("helmet");
 const serverless = require('serverless-http');
-const { clerkMiddleware } = require('@clerk/express');
 const { registerRoutes } = require("./routes");
 const { initializeStorage } = require("./storage");
 const { initializeEnvFromConfig } = require("./config");
@@ -56,19 +55,8 @@ async function initializeApp() {
     next();
   });
 
-  // Add Clerk middleware BEFORE routes
-  // This will attach auth information to req.auth
-  const clerkPublishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY || process.env.VITE_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  if (!clerkPublishableKey) {
-    console.warn("Warning: Clerk publishable key is missing. Authentication may not work properly.");
-  } else {
-    console.log("Using Clerk publishable key:", clerkPublishableKey.substring(0, 10) + "...");
-  }
-  
-  app.use(clerkMiddleware({
-    publishableKey: clerkPublishableKey
-  }));
-  console.log("Clerk middleware registered.");
+  // Firebase authentication is now handled by the auth middleware
+  console.log("Using Firebase authentication");
 
   // Await the storage initialization with better error handling
   let storage;
