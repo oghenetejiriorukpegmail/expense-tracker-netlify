@@ -126,9 +126,6 @@
   <title>Mileage Logs | Expense Tracker</title>
 </svelte:head>
 
-<svelte:head>
-  <title>Mileage Logs | Expense Tracker</title>
-</svelte:head>
 
 <div class="container mx-auto p-4 md:p-6">
   <div class="flex justify-between items-center mb-6">
