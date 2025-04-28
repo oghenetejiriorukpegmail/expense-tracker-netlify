@@ -43,8 +43,7 @@
     "pdf-parse",
     "sharp"
   ]
-  # Set function timeout to 30 seconds (max for Netlify free tier)
-  timeout = "30s"
+  # Timeout setting removed to fix Netlify build error
   # Include source maps for easier debugging
   included_files = ["dist-server/**/*.map"]
 
