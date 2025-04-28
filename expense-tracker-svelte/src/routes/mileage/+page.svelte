@@ -133,7 +133,9 @@
     
     <div class="flex gap-2">
       <Button variant="outline" on:click={refreshLogs} disabled={isLoading || isRefreshing}>
-        <RefreshCw class="h-4 w-4 mr-2" class:animate-spin={isRefreshing} />
+        <span class:animate-spin={isRefreshing}>
+          <RefreshCw class="h-4 w-4 mr-2" />
+        </span>
         Refresh
       </Button>
       
