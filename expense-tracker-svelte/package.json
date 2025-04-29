@@ -42,9 +42,14 @@
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.1.4",
+		"@trpc/client": "^10.45.1",
+		"@trpc/server": "^10.45.1",
 		"firebase": "^11.6.1",
 		"jspdf": "^3.0.1",
 		"jspdf-autotable": "^5.0.2",
-		"xlsx": "^0.18.5"
+		"lucide-svelte": "^0.363.0",
+		"sveltekit-superforms": "^2.10.6",
+		"xlsx": "^0.18.5",
+		"zod": "^3.22.4"
 	}
 }

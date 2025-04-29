@@ -110,6 +110,8 @@
         on:dragstart={(e) => handleDragStart(e, widget.id)}
         on:dragover={handleDragOver}
         on:drop={(e) => handleDrop(e, widget.id)}
+        role="region"
+        aria-label="Draggable widget: {widget.title}"
       >
         <div class="h-full bg-white rounded-lg shadow-sm overflow-hidden">
           {#if isEditing}
